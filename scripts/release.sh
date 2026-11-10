@@ -2,7 +2,12 @@
 # Fabrique la version distribuée : application universelle signée « Developer ID », image disque,
 # notarisation par Apple, agrafage du ticket.
 #
-# Usage : scripts/release.sh            → build/DeckPilot-<version>.dmg
+# Usage : scripts/release.sh             → build/DeckPilot-<version>.dmg et appcast.xml mis à jour
+#         scripts/release.sh --publish   → en plus : version GitHub créée, puis appcast.xml commité et poussé
+#
+# La version vient du fichier VERSION. Les notes de version, si le fichier release-notes/<version>.md existe,
+# sont montrées par Sparkle dans sa fenêtre de mise à jour et reprises dans la version GitHub.
+# La signature des mises à jour utilise la clé EdDSA de Sparkle rangée dans le trousseau.
 #
 # Identifiants de notarisation, lus dans l'environnement ou dans un fichier .env à la racine (jamais commité) :
 #   APPLE_ID        adresse du compte développeur Apple
@@ -49,5 +54,32 @@ xcrun stapler staple "$DMG"
 xcrun stapler validate "$DMG"
 spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
 
+echo "==> Flux de mises à jour (appcast.xml)"
+REPO_URL="https://github.com/ezeeFlop/DeckPilot"
+NOTES="release-notes/${VERSION}.md"
+FEED="build/appcast"
+rm -rf "$FEED"
+mkdir -p "$FEED"
+cp "$DMG" "$FEED/"
+[[ -f appcast.xml ]] && cp appcast.xml "$FEED/appcast.xml"
+[[ -f "$NOTES" ]] && cp "$NOTES" "$FEED/DeckPilot-${VERSION}.md"
+.build/artifacts/sparkle/Sparkle/bin/generate_appcast \
+    --download-url-prefix "${REPO_URL}/releases/download/v${VERSION}/" \
+    --link "$REPO_URL" --embed-release-notes -o "$FEED/appcast.xml" "$FEED"
+cp "$FEED/appcast.xml" appcast.xml
+
 echo "Prêt à distribuer : $DMG"
 shasum -a 256 "$DMG"
+
+if [[ "${1:-}" == "--publish" ]]; then
+    echo "==> Publication sur GitHub"
+    # L'image disque d'abord, le flux ensuite : le flux ne doit jamais annoncer un fichier absent.
+    if [[ -f "$NOTES" ]]; then
+        gh release create "v${VERSION}" "$DMG" --title "DeckPilot ${VERSION}" --notes-file "$NOTES"
+    else
+        gh release create "v${VERSION}" "$DMG" --title "DeckPilot ${VERSION}" --generate-notes
+    fi
+    git add appcast.xml
+    git commit -m "Flux de mises à jour : version ${VERSION}"
+    git push
+fi

@@ -49,6 +49,11 @@ with a Developer ID and notarized by Apple. It needs macOS 14 or later.
 
 Quit the vendor's StreamDock app first: two programs cannot drive the deck at once.
 
+DeckPilot keeps itself up to date with [Sparkle](https://sparkle-project.org). On its
+second launch it asks whether it may check for updates automatically; if you agree, it
+reads the release feed of this repository about once a day. That is its only network
+activity of its own. You can check by hand or turn the checks off from its menu bar icon.
+
 ## Build from source
 
 You need macOS 14 or later and Xcode (Swift 5.10 or later).
@@ -69,9 +74,11 @@ have one, so the permission survives rebuilds; otherwise it signs ad hoc and mac
 ask again after each rebuild.
 
 `scripts/release.sh` produces the distributed disk image: universal build, Developer ID
-signature with the hardened runtime, notarization, stapling. It needs a Developer ID
-certificate and three variables (`APPLE_ID`, `APPLE_PASSWORD`, `TEAM_ID`) in the
-environment or in an untracked `.env` file.
+signature with the hardened runtime, notarization, stapling, then the update feed
+(`appcast.xml`). It needs a Developer ID certificate, three variables (`APPLE_ID`,
+`APPLE_PASSWORD`, `TEAM_ID`) in the environment or in an untracked `.env` file, and the
+Sparkle signing key in the keychain. A fork that ships its own builds must put its own
+feed address and public key in `scripts/build-app.sh`.
 
 Your settings live in `~/Library/Application Support/DeckPilot/config.json`, with images
 in the `images` folder next to it.
@@ -137,6 +144,8 @@ The full notes, with what was read in the code and what was seen on the device, 
 - [MiraboxSpace/StreamDock-Device-SDK](https://github.com/MiraboxSpace/StreamDock-Device-SDK),
   the official SDK. The commands above were confirmed by reading its transport library
   with Ghidra, then by trying them on the device.
+
+- [Sparkle](https://sparkle-project.org) for updates.
 
 DeckPilot is a personal project. It is not affiliated with or endorsed by MiraBox, and it
 contains none of their code.

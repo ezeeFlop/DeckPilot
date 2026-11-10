@@ -29,6 +29,12 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/DeckPilot"
 
+# Sparkle (mises à jour) : la bibliothèque voyage dans l'application.
+SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+mkdir -p "$APP/Contents/Frameworks"
+cp -R .build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework "$SPARKLE"
+install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/DeckPilot" 2>/dev/null || true
+
 # macOS 26 découpe lui-même une icône pleine surface ; avant, l'icône doit déjà porter ses coins arrondis.
 # L'icône arrondie est toujours embarquée : l'application la reprend pour le Dock sur les systèmes plus anciens.
 if [[ "$(sw_vers -productVersion | cut -d. -f1)" -ge 26 ]]; then ICON=Resources/AppIcon.icns; else ICON=Resources/AppIcon-legacy.icns; fi
@@ -53,6 +59,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSPrincipalClass</key><string>NSApplication</string>
+    <key>SUFeedURL</key><string>https://raw.githubusercontent.com/ezeeFlop/DeckPilot/main/appcast.xml</string>
+    <key>SUPublicEDKey</key><string>hII6oRXJerWXupIwDLmbCTLGsVj7rUOR0QGDzabuhzI=</string>
     <key>NSAppleEventsUsageDescription</key><string>DeckPilot règle le volume du Mac quand une touche le demande.</string>
 </dict>
 </plist>
@@ -61,9 +69,16 @@ PLIST
 # Une identité de signature stable évite de redonner l'autorisation Accessibilité à chaque reconstruction.
 DETECTED="$(security find-identity -v -p codesigning 2>/dev/null | awk -F'"' '/Apple Development/ {print $2; exit}')"
 IDENTITY="${DECKPILOT_SIGN_IDENTITY:-${DETECTED:--}}"
-SIGN_OPTIONS=(--force --sign "$IDENTITY" --identifier com.spongetheory.deckpilot --entitlements Resources/DeckPilot.entitlements)
-[[ "${DECKPILOT_HARDENED:-0}" == "1" ]] && SIGN_OPTIONS+=(--options runtime --timestamp)
-codesign "${SIGN_OPTIONS[@]}" "$APP"
+BASE=(--force --sign "$IDENTITY")
+[[ "${DECKPILOT_HARDENED:-0}" == "1" ]] && BASE+=(--options runtime --timestamp)
+# Signature de l'intérieur vers l'extérieur : les composants de Sparkle, puis la bibliothèque, puis l'application.
+codesign "${BASE[@]}" "$SPARKLE/Versions/B/XPCServices/Installer.xpc"
+codesign "${BASE[@]}" --preserve-metadata=entitlements "$SPARKLE/Versions/B/XPCServices/Downloader.xpc"
+codesign "${BASE[@]}" "$SPARKLE/Versions/B/Autoupdate"
+codesign "${BASE[@]}" "$SPARKLE/Versions/B/Updater.app"
+codesign "${BASE[@]}" "$SPARKLE"
+codesign "${BASE[@]}" --identifier com.spongetheory.deckpilot --entitlements Resources/DeckPilot.entitlements "$APP"
+codesign --verify --deep --strict "$APP"
 echo "Construit : $APP (version $VERSION)"
 
 if [[ $INSTALL -eq 1 ]]; then

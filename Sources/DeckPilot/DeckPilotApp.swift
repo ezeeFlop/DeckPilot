@@ -5,6 +5,7 @@ import SwiftUI
 struct DeckPilotApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var controller = DeckController()
+    @StateObject private var updater = SoftwareUpdater()
 
     var body: some Scene {
         Window("DeckPilot", id: "main") {
@@ -14,10 +15,17 @@ struct DeckPilotApp: App {
                 .onAppear { delegate.controller = controller }
         }
         .defaultSize(width: 1180, height: 700)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Rechercher les mises à jour…") { updater.checkForUpdates() }
+                    .disabled(!updater.canCheckForUpdates)
+            }
+        }
 
         MenuBarExtra("DeckPilot", systemImage: "square.grid.3x2.fill") {
             MenuContent()
                 .environmentObject(controller)
+                .environmentObject(updater)
                 .onAppear { delegate.controller = controller }
         }
     }
@@ -44,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// Le menu de la barre des menus : le boîtier continue de fonctionner fenêtre fermée.
 private struct MenuContent: View {
     @EnvironmentObject private var controller: DeckController
+    @EnvironmentObject private var updater: SoftwareUpdater
     @Environment(\.openWindow) private var openWindow
     @State private var launchesAtLogin = SMAppService.mainApp.status == .enabled
 
@@ -78,6 +87,13 @@ private struct MenuContent: View {
                     launchesAtLogin = SMAppService.mainApp.status == .enabled
                 }
             }
+        Button("Rechercher les mises à jour…") { updater.checkForUpdates() }
+            .disabled(!updater.canCheckForUpdates)
+        Toggle("Vérifier les mises à jour automatiquement", isOn: Binding(
+            get: { updater.automaticallyChecksForUpdates },
+            set: { updater.automaticallyChecksForUpdates = $0 }
+        ))
+        Divider()
         Button("Quitter DeckPilot") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }
