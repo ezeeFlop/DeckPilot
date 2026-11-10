@@ -3,6 +3,21 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.6.1</title>
+            <pubDate>Tue, 10 Nov 2026 14:06:57 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.6.1</sparkle:version>
+            <sparkle:shortVersionString>0.6.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Fix
+
+- Live data: a number written without a leading zero, such as `.2`, was read as `2`. It is
+  now read as `0.2`. This is how `bc` prints small values, so a command using it showed
+  values ten times too large.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.6.1/DeckPilot-0.6.1.dmg" length="6071612" type="application/octet-stream" sparkle:edSignature="4TAHKjG1bZfjTwRSAgLo1gplgXQYGzTmpYzOG2snrKsc8OQblwy1nIxxd2n0XQaXsbIsNkcUhzaCqjLii5KCDw=="/>
+        </item>
+        <item>
             <title>0.6.0</title>
             <pubDate>Tue, 10 Nov 2026 13:52:06 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
@@ -39,27 +54,6 @@ Node.js must be installed on the Mac. Plugins written as an HTML page, dials, to
 and profile switching are not supported. This first version has been tried with one plugin.
 ]]></description>
             <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.5.0/DeckPilot-0.5.0.dmg" length="6026260" type="application/octet-stream" sparkle:edSignature="wyzLLvDUi+6FVtMo/0fkzXxWK4pODCjXpK5UsWYc4WzpAJ6fF+R5TryzejLnnl7u9h6zjacD5mOMzZuG0iCdAw=="/>
-        </item>
-        <item>
-            <title>0.4.0</title>
-            <pubDate>Tue, 10 Nov 2026 13:15:18 +0100</pubDate>
-            <link>https://github.com/ezeeFlop/DeckPilot</link>
-            <sparkle:version>0.4.0</sparkle:version>
-            <sparkle:shortVersionString>0.4.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[## Folders
-
-Right-click a key and choose **Create a folder here**: the key now opens a page of its own,
-which already has its **Back** key. Folders stay out of the next/previous page cycle. Any
-page can be turned into a folder, or back into an ordinary page, from its menu in the sidebar.
-
-## Pages that follow your apps
-
-Right-click a page in the sidebar and choose **Linked applications…**. When one of them
-comes to the front, the deck shows that page; when you leave, it returns to the page it
-was on.
-]]></description>
-            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.4.0/DeckPilot-0.4.0.dmg" length="5733611" type="application/octet-stream" sparkle:edSignature="gryrfNZlx20EiPdW/d7kTvQSOIM2EkGjnQ3WY0I/9UHQ3LyZGCElVInsYa/Aqb3UifapQxVRd0KSgrfepehYCw=="/>
         </item>
     </channel>
 </rss>
