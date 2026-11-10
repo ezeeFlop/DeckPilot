@@ -3,6 +3,28 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.3.0</title>
+            <pubDate>Tue, 10 Nov 2026 13:07:48 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.3.0</sparkle:version>
+            <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Two-state keys
+
+A key can now have a second look and a second action. Under **Second state** in a key's
+settings, choose what switches it:
+
+- every press, for a plain toggle;
+- the Mac's sound being muted;
+- an application being open;
+- a command succeeding (checked every 5 seconds).
+
+Then pick **State 2** at the top of the panel and set its title, icon, background and
+action with the same controls as the first state.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.3.0/DeckPilot-0.3.0.dmg" length="5670736" type="application/octet-stream" sparkle:edSignature="Np6fnskwlnWMOlBQPkCsnUu7tiIZy9XcxCAfqNHmYo5is/SQ889rwIaQhbTa7+hEda68koYvh16R4Ao+9GalBA=="/>
+        </item>
+        <item>
             <title>0.2.0</title>
             <pubDate>Tue, 10 Nov 2026 13:00:54 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
@@ -43,28 +65,6 @@ first launch, the starter keys are named in your language too.
   trying a layout without touching your own.
 ]]></description>
             <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.1.2/DeckPilot-0.1.2.dmg" length="5267581" type="application/octet-stream" sparkle:edSignature="DVrsxe6w8i6BF0gHeYN9vP0fTCA+qoh2alPE+IZY35XZJVjWUilDYUFVknCIoGi9KyWUUQ9IqtLk0gjd/QDhCw=="/>
-        </item>
-        <item>
-            <title>0.1.1</title>
-            <pubDate>Tue, 10 Nov 2026 12:37:42 +0100</pubDate>
-            <link>https://github.com/ezeeFlop/DeckPilot</link>
-            <sparkle:version>0.1.1</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[## Automatic updates
-
-DeckPilot can now update itself. It checks the release feed on GitHub, downloads the new
-version and installs it; every update is signed. You can check by hand from the DeckPilot
-menu or the menu bar icon, and turn automatic checks off there.
-
-Version 0.1.0 has no updater: install this version by hand once, and later ones will arrive
-on their own.
-
-## Also in this version
-
-- New app icon.
-]]></description>
-            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.1.1/DeckPilot-0.1.1.dmg" length="5250187" type="application/octet-stream" sparkle:edSignature="Q4AVGiH/9VuIt0DF+VVEI09CavHibRX6zUr8AcIQesUz9KIF/t7NopQCRvqO9ZAefKSav4K9Kw4fu1YhRl3EDA=="/>
         </item>
     </channel>
 </rss>
