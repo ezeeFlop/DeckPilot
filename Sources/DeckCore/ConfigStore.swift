@@ -51,4 +51,22 @@ public struct ConfigStore: Sendable {
     }
 
     public func imageURL(named name: String) -> URL { imagesFolder.appendingPathComponent(name) }
+
+    /// Dossier des extensions installées (un sous-dossier `.sdPlugin` par extension).
+    public var pluginsFolder: URL { folder.appendingPathComponent("Plugins", isDirectory: true) }
+
+    private var pluginSettingsURL: URL { folder.appendingPathComponent("plugin-settings.json") }
+
+    /// Réglages généraux de chaque extension, par identifiant d'extension.
+    public func loadPluginSettings() -> [String: JSONValue] {
+        guard let data = try? Data(contentsOf: pluginSettingsURL) else { return [:] }
+        return (try? JSONDecoder().decode([String: JSONValue].self, from: data)) ?? [:]
+    }
+
+    public func savePluginSettings(_ settings: [String: JSONValue]) throws {
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        try encoder.encode(settings).write(to: pluginSettingsURL, options: .atomic)
+    }
 }

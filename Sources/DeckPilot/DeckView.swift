@@ -137,7 +137,9 @@ struct SlotFace: View {
 
     var body: some View {
         let key = showingSecondState.map { controller.key(at: slot).resolved(active: $0) } ?? controller.shownKey(at: slot)
-        if let settings = key.live, settings.source != .none {
+        if key.plugin != nil {
+            face(key, time: 0, plugin: controller.pluginDisplay(key: key))
+        } else if let settings = key.live, settings.source != .none {
             LiveFace(engine: controller.live, clock: controller.animation) {
                 face(key, time: 0, live: controller.liveDisplay(slot: slot, key: key))
             }
@@ -148,11 +150,11 @@ struct SlotFace: View {
         }
     }
 
-    private func face(_ key: KeyConfig, time: TimeInterval, live: LiveDisplay? = nil) -> KeyFaceView {
+    private func face(_ key: KeyConfig, time: TimeInterval, live: LiveDisplay? = nil, plugin: PluginDisplay? = nil) -> KeyFaceView {
         KeyFaceView(config: key, side: side, iconImage: controller.icons.image(for: key.icon, at: time),
                     time: time, now: controller.now, pressed: controller.pressedSlots.contains(slot),
                     leadingInset: CGFloat(controller.layout.contentLeadingInset(ofSlot: slot)) / CGFloat(controller.layout.imageSide),
-                    live: live)
+                    live: live, plugin: plugin)
     }
 }
 

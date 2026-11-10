@@ -65,6 +65,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <key>SUFeedURL</key><string>https://raw.githubusercontent.com/ezeeFlop/DeckPilot/main/appcast.xml</string>
     <key>SUPublicEDKey</key><string>hII6oRXJerWXupIwDLmbCTLGsVj7rUOR0QGDzabuhzI=</string>
+    <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
     <key>NSAppleEventsUsageDescription</key><string>DeckPilot règle le volume du Mac quand une touche le demande.</string>
 </dict>
 </plist>

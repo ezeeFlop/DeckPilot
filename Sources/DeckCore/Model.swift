@@ -92,6 +92,8 @@ public struct KeyConfig: Codable, Hashable, Sendable {
     public var live: LiveData?
     /// Second état de la touche ; `nil` pour une touche à un seul état.
     public var alternate: KeyAlternate?
+    /// Action d'extension qui tient cette touche : elle en dessine l'image et reçoit ses appuis.
+    public var plugin: PluginBinding?
 
     public init(title: String = "", titleColor: DeckColor = .white, titleSize: Double = 15,
                 titlePosition: TitlePosition = .bottom, background: DeckColor = .black,

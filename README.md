@@ -46,6 +46,9 @@ right; what you see in the window is what the deck displays.
   a key and choose "Create a folder here".
 - **Pages that follow your apps.** Link applications to a page and the deck shows it when
   one of them comes to the front, then returns to where it was when you leave.
+- **Stream Deck plugins.** DeckPilot can host plugins written for Elgato's Stream Deck with
+  the official Node.js kit: the plugin draws its keys, receives their presses and shows its
+  own settings page. See the limits below.
 - **French and English.** The interface follows your system language.
 - **Stays out of the way.** It lives in the menu bar, reconnects when the deck is plugged
   back in, can dim the deck after a period without a key press, and uses about 0.2 % CPU
@@ -115,6 +118,27 @@ in the `images` folder next to it.
 
 Only the keys of the page on display are refreshed.
 
+## Stream Deck plugins
+
+DeckPilot speaks the plugin protocol of Elgato's Stream Deck software, so a plugin built with
+the official [`@elgato/streamdeck`](https://github.com/elgatosf/streamdeck) kit can drive a key.
+
+To install one, select a key and use **Install a plugin…** under **Plugin**, with a
+`.sdPlugin` folder or a `.streamDeckPlugin` file. Plugins live in
+`~/Library/Application Support/DeckPilot/Plugins`. Then hand the key to one of the plugin's
+actions; its settings page appears in the panel.
+
+What is supported: plugins that run on Node.js (which must be installed on the Mac) or as a
+native program; key actions; titles, images (PNG, JPEG, SVG), states, OK and alert marks;
+per-key and global settings; the settings page and its messages to the plugin.
+
+What is not: plugins written as an HTML page, dials and touch strips, profile switching,
+multi-actions, and the monitoring of other applications. Plugins bought on Elgato's
+marketplace have not been tried and may be tied to Elgato's software. A plugin's global
+settings, API keys included, are stored as plain text.
+
+This has been tried with one plugin, written with version 3.0.4 of the kit.
+
 ## The protocol, in short
 
 Everything goes through the vendor HID interface (usage page `0xFFA0`): 1024-byte output
@@ -157,7 +181,7 @@ The full notes, with what was read in the code and what was seen on the device, 
   Actions therefore fire on press, and there is no long-press action.
 - **The boot logo is not supported.** The command exists (`LOG`), but it writes to the
   deck's permanent memory and I have not tried it.
-- **No plug-in system.** Actions are the ones listed above.
+- **Plugin support is partial**, see above.
 
 ## How the code is laid out
 

@@ -62,4 +62,16 @@ final class ConfigStoreTests: XCTestCase {
         defaults.set("/tmp/une-autre-config", forKey: "configFolder")
         XCTAssertEqual(ConfigStore.forLaunch(defaults: defaults).folder.path, "/tmp/une-autre-config")
     }
+
+    func testPluginsLiveInTheirOwnFolderOfTheStore() {
+        XCTAssertEqual(ConfigStore(folder: folder).pluginsFolder, folder.appendingPathComponent("Plugins", isDirectory: true))
+    }
+
+    func testPluginGlobalSettingsAreEmptyAtFirstThenReadBack() throws {
+        let store = ConfigStore(folder: folder)
+        XCTAssertEqual(store.loadPluginSettings(), [:])
+        let settings: [String: JSONValue] = ["com.example.zeus": .object(["url": .string("https://zeus.example")])]
+        try store.savePluginSettings(settings)
+        XCTAssertEqual(ConfigStore(folder: folder).loadPluginSettings(), settings)
+    }
 }

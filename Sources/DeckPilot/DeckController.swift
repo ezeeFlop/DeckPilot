@@ -28,7 +28,11 @@ final class DeckController: ObservableObject {
     let animation = AnimationClock()
     let live = LiveDataEngine()
     let states = KeyStateEngine()
+    let plugins = PluginHost()
     private var stateObservation: AnyCancellable?
+    private var pluginObservation: AnyCancellable?
+    /// Touches d'extension actuellement enfoncées, pour leur annoncer le relâchement même si le boîtier l'oublie.
+    private var pluginKeysDown: [Int: String] = [:]
     private var wasAnimating = false
     private var time: TimeInterval { animation.time }
     private var clock: TimeInterval = 0
@@ -77,6 +81,9 @@ final class DeckController: ObservableObject {
         deck.start()
         // Un changement d'état d'une touche doit redessiner la fenêtre comme un changement de réglage.
         stateObservation = states.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
+        pluginObservation = plugins.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
+        plugins.onSettingsChanged = { [weak self] context, settings in self?.storePluginSettings(settings, for: context) }
+        plugins.start(store: store)
         // `-select 13` au lancement ouvre directement le réglage de cette case.
         let requested = UserDefaults.standard.integer(forKey: "select")
         if layout.slots.contains(requested) { selectedSlot = requested }
@@ -241,6 +248,7 @@ final class DeckController: ObservableObject {
     /// Éteint proprement l'affichage avant de quitter.
     func shutdown() {
         saveNow()
+        plugins.stop()
         guard isConnected else { return }
         deck.send(.disconnect)
         deck.drain()
@@ -273,6 +281,12 @@ final class DeckController: ObservableObject {
         clock = Date().timeIntervalSince(start)
         presses.press(input.key, at: clock)
         pressedSlots = presses.held(at: clock)
+        if let binding = key(at: input.key).plugin {
+            // Une touche d'extension ne déclenche rien ici : c'est l'extension qui décide quoi faire de l'appui.
+            pluginKeysDown[input.key] = binding.context
+            plugins.keyDown(binding.context)
+            return
+        }
         perform(shownKey(at: input.key).action)
         states.pressed(page: currentPage.id, slot: input.key, key: key(at: input.key))
     }
@@ -321,6 +335,7 @@ final class DeckController: ObservableObject {
         clock = Date().timeIntervalSince(start)
         live.update(page: currentPage, clock: clock)
         states.update(page: currentPage, clock: clock)
+        syncPlugins()
         // Un battement de plus après la fin d'une animation, pour que la dernière image montre la valeur d'arrivée.
         let animating = layout.slots.contains { isAnimated(shownKey(at: $0)) } || live.hasRunningTransition(clock: clock)
         if animating || wasAnimating { animation.time = clock }
@@ -354,6 +369,42 @@ final class DeckController: ObservableObject {
         if changed { deck.send(.refresh) }
     }
 
+    // MARK: Extensions
+
+    /// Ce que l'extension d'une touche veut y montrer ; `nil` pour une touche sans extension.
+    func pluginDisplay(key: KeyConfig) -> PluginDisplay? {
+        guard let binding = key.plugin else { return nil }
+        let face = plugins.faces[binding.context]
+        return PluginDisplay(image: face?.image ?? plugins.defaultImage(action: binding.action, state: face?.state ?? 0),
+                             title: face?.title, flash: face?.flash, isMissing: plugins.action(binding.action) == nil)
+    }
+
+    /// Annonce aux extensions les touches qui leur appartiennent sur la page affichée,
+    /// et relâche celles dont le boîtier n'a pas signalé le relâchement.
+    private func syncPlugins() {
+        var visible: [PluginInstance] = []
+        for slot in layout.slots where layout.isPressable(slot: slot) {
+            guard let binding = key(at: slot).plugin, let position = layout.position(ofSlot: slot) else { continue }
+            visible.append(PluginInstance(action: binding.action, context: binding.context, settings: binding.settings,
+                                          row: position.row, column: position.column,
+                                          state: plugins.faces[binding.context]?.state ?? 0))
+        }
+        plugins.sync(visible)
+        for (slot, context) in pluginKeysDown where !pressedSlots.contains(slot) {
+            plugins.keyUp(context)
+            pluginKeysDown[slot] = nil
+        }
+    }
+
+    /// Une extension a changé les réglages d'une de ses touches : on les range dans la configuration.
+    private func storePluginSettings(_ settings: JSONValue, for context: String) {
+        for pageIndex in config.pages.indices {
+            for (slot, key) in config.pages[pageIndex].keys where key.plugin?.context == context && key.plugin?.settings != settings {
+                config.pages[pageIndex].keys[slot]?.plugin?.settings = settings
+            }
+        }
+    }
+
     /// Ce que la donnée vivante d'une case doit montrer maintenant ; `nil` pour une case ordinaire.
     func liveDisplay(slot: Int, key: KeyConfig) -> LiveDisplay? {
         guard let settings = key.live, settings.source != .none else { return nil }
@@ -371,6 +422,11 @@ final class DeckController: ObservableObject {
         var hasher = Hasher()
         hasher.combine(key)
         hasher.combine(pressedSlots.contains(slot))
+        if let binding = key.plugin {
+            hasher.combine(plugins.faces[binding.context]?.revision)
+            hasher.combine(plugins.action(binding.action) != nil)
+            return hasher.finalize()
+        }
         if let display = liveDisplay(slot: slot, key: key) {
             hasher.combine(display)
             return hasher.finalize()
@@ -388,7 +444,7 @@ final class DeckController: ObservableObject {
         let view = KeyFaceView(config: key, side: side, iconImage: icons.image(for: key.icon, at: time), time: time,
                                now: now, pressed: pressedSlots.contains(slot),
                                leadingInset: CGFloat(layout.contentLeadingInset(ofSlot: slot)) / side,
-                               live: liveDisplay(slot: slot, key: key))
+                               live: liveDisplay(slot: slot, key: key), plugin: pluginDisplay(key: key))
         // Un seul moteur de rendu, réutilisé : en créer un par image coûte cher en mémoire et en temps.
         if let renderer {
             renderer.content = view

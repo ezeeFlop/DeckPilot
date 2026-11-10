@@ -68,6 +68,13 @@ private struct KeyEditor: View {
                 }
             }
 
+            // Sur une touche d'extension, les réglages de l'extension passent en premier : c'est elle qui dessine la touche.
+            if pressable && isPluginKey {
+                Section("Extension") {
+                    PluginEditor(key: $key)
+                }
+            }
+
             Section("Titre") {
                 TextField("Texte", text: face.title, prompt: Text("Aucun"))
                 ColorPicker("Couleur", selection: color(face, \.titleColor), supportsOpacity: false)
@@ -81,7 +88,8 @@ private struct KeyEditor: View {
             }
 
             // Une case qui montre une donnée, l'heure ou la date n'affiche pas d'icône : sa section est masquée.
-            if !showsLiveContent {
+            // Une touche d'extension non plus : c'est l'extension qui la dessine.
+            if !showsLiveContent && !isPluginKey {
                 Section("Icône") {
                     IconEditor(key: face)
                     if face.wrappedValue.icon != .none {
@@ -99,7 +107,7 @@ private struct KeyEditor: View {
             }
 
             // Le contenu vivant est commun aux deux états : il se règle depuis le premier.
-            if !showsSecondState {
+            if !showsSecondState && !isPluginKey {
                 Section("Contenu vivant") {
                     LiveEditor(key: $key, slot: slot)
                 }
@@ -123,7 +131,13 @@ private struct KeyEditor: View {
                 }
             }
 
-            if pressable {
+            if pressable && !showsSecondState && !isPluginKey {
+                Section("Extension") {
+                    PluginEditor(key: $key)
+                }
+            }
+
+            if pressable && !isPluginKey {
                 Section("Action") {
                     ActionEditor(action: face.action)
                     Button("Essayer maintenant") { controller.perform(face.wrappedValue.action) }
@@ -131,7 +145,7 @@ private struct KeyEditor: View {
                 }
             }
 
-            if !showsSecondState {
+            if !showsSecondState && !isPluginKey {
                 Section("Second état") {
                     SecondStateEditor(key: $key, pressable: pressable)
                 }
@@ -146,12 +160,77 @@ private struct KeyEditor: View {
         .onChange(of: key.alternate == nil) { _, removed in if removed { editsSecondState = false } }
     }
 
+    private var isPluginKey: Bool { key.plugin != nil }
+
     private var showsLiveContent: Bool {
         key.widget != .none || (key.live.map { $0.source != .none } ?? false)
     }
 
     private func color(_ face: Binding<KeyConfig>, _ path: WritableKeyPath<KeyConfig, DeckColor>) -> Binding<Color> {
         Binding(get: { face.wrappedValue[keyPath: path].color }, set: { face.wrappedValue[keyPath: path] = DeckColor($0) })
+    }
+}
+
+// MARK: Extension
+
+/// Confie la touche à une action d'extension, et montre la page de réglage de cette extension.
+private struct PluginEditor: View {
+    @EnvironmentObject private var controller: DeckController
+    @Binding var key: KeyConfig
+
+    var body: some View {
+        let host = controller.plugins
+        Picker("Confier la touche à", selection: Binding(get: { key.plugin?.action ?? "" }, set: { choose($0) })) {
+            Text("Aucune extension").tag("")
+            ForEach(host.plugins) { plugin in
+                ForEach(plugin.manifest.keyActions) { action in
+                    Text("\(plugin.manifest.name) : \(action.name)").tag(action.uuid)
+                }
+            }
+            if let binding = key.plugin, host.action(binding.action) == nil {
+                Text("Extension absente").tag(binding.action)
+            }
+        }
+        if let binding = key.plugin {
+            if let problem = host.action(binding.action)?.plugin.problem {
+                Text(problem)
+                    .font(.callout)
+                    .foregroundStyle(.red)
+            } else if let page = host.inspectorParameters(for: binding.context) {
+                PropertyInspectorView(url: page.url, folder: page.folder, port: host.port, context: binding.context,
+                                      info: page.info, actionInfo: page.actionInfo)
+                    .id(binding.context)
+                    .frame(height: 390)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+        }
+        Button("Installer une extension…") { install() }
+    }
+
+    private func choose(_ action: String) {
+        guard action != (key.plugin?.action ?? "") else { return }
+        if action.isEmpty {
+            key.plugin = nil
+        } else {
+            key.plugin = PluginBinding(action: action)
+            key.action = .none
+            key.alternate = nil
+            key.live = nil
+            key.widget = .none
+        }
+    }
+
+    private func install() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.treatsFilePackagesAsDirectories = false
+        panel.message = String(localized: "Choisis un dossier .sdPlugin ou un fichier .streamDeckPlugin.")
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try controller.plugins.install(from: url)
+        } catch {
+            controller.message = String(localized: "Extension non installée : \(error.localizedDescription)")
+        }
     }
 }
 

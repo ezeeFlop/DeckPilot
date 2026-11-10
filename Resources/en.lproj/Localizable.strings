@@ -1,6 +1,7 @@
 /* English. The keys are the French texts used in the source code. */
 
 "%" = "%";
+"%@ : %@" = "%@: %@";
 "%lld %%" = "%lld%%";
 "Accueil" = "Home";
 "Action" = "Action";
@@ -24,6 +25,7 @@
 "Après 5 min" = "After 5 min";
 "Aucun" = "None";
 "Aucune application pour l'instant." = "No application yet.";
+"Aucune extension" = "No plugin";
 "Aucune" = "None";
 "Authorization: Bearer …" = "Authorization: Bearer …";
 "Autorise DeckPilot dans Réglages Système › Confidentialité et sécurité › Accessibilité, puis réessaie." = "Allow DeckPilot in System Settings › Privacy & Security › Accessibility, then try again.";
@@ -43,6 +45,7 @@
 "Chaque minute" = "Every minute";
 "Choisir une autre image…" = "Choose another image…";
 "Choisir…" = "Choose…";
+"Choisis un dossier .sdPlugin ou un fichier .streamDeckPlugin." = "Choose a .sdPlugin folder or a .streamDeckPlugin file.";
 "Choisis une image ou un GIF animé pour cette case." = "Choose an image or an animated GIF for this key.";
 "Choisis une touche" = "Choose a key";
 "Choisis « État 2 » en haut du panneau pour régler son aspect et son action." = "Choose “State 2” at the top of the panel to set its look and its action.";
@@ -51,6 +54,7 @@
 "Coller" = "Paste";
 "Commande refusée : %@" = "Command refused: %@";
 "Commande" = "Command";
+"Confier la touche à" = "Hand the key to";
 "Configuration non enregistrée : %@" = "Settings not saved: %@";
 "Configurer les touches…" = "Configure keys…";
 "Contenu vivant" = "Live content";
@@ -77,6 +81,9 @@
 "Enregistrer" = "Record";
 "Espace" = "Space";
 "Essayer maintenant" = "Try it now";
+"Extension absente" = "Missing plugin";
+"Extension non installée : %@" = "Plugin not installed: %@";
+"Extension" = "Plugin";
 "Fermer" = "Close";
 "Fichier introuvable : %@" = "File not found: %@";
 "Fond" = "Background";
@@ -86,7 +93,9 @@
 "Icône" = "Icon";
 "Image non copiée : %@" = "Image not copied: %@";
 "Image ou GIF" = "Image or GIF";
+"Installer une extension…" = "Install a plugin…";
 "Jamais" = "Never";
+"L'extension s'arrête dès son lancement." = "The plugin stops as soon as it starts.";
 "L'heure" = "The time";
 "La commande n'a rien affiché" = "The command printed nothing";
 "La date" = "The date";
@@ -96,6 +105,7 @@
 "Le résultat d'une commande" = "The output of a command";
 "Lecture / pause" = "Play / pause";
 "Lecture" = "Play";
+"Les extensions écrites en HTML ne sont pas prises en charge." = "Plugins written in HTML are not supported.";
 "Luminosité des écrans du boîtier" = "Brightness of the deck's screens";
 "Luminosité du boîtier" = "Deck brightness";
 "Luminosité" = "Brightness";
@@ -107,6 +117,7 @@
 "Monter le son" = "Volume up";
 "Muet" = "Mute";
 "Mémoire" = "Memory";
+"Node.js est introuvable sur ce Mac ; cette extension en a besoin." = "Node.js was not found on this Mac; this plugin needs it.";
 "Nom de la page" = "Page name";
 "Nom du raccourci" = "Shortcut name";
 "Orange à partir de" = "Orange from";

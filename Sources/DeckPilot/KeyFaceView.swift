@@ -25,6 +25,8 @@ struct KeyFaceView: View {
     var leadingInset: CGFloat = 0
     /// Valeur à montrer quand la case porte une donnée vivante.
     var live: LiveDisplay?
+    /// Image et titre fournis par une extension, quand la touche lui appartient.
+    var plugin: PluginDisplay?
 
     private var unit: CGFloat { side / 96 }
     private var hasTitle: Bool { !config.title.isEmpty }
@@ -50,11 +52,52 @@ struct KeyFaceView: View {
     }
 
     @ViewBuilder private var content: some View {
-        if let live {
+        if let plugin {
+            pluginContent(plugin)
+        } else if let live {
             LiveContent(display: live, title: config.title, titleSize: config.titleSize, titleColor: config.titleColor.color,
                         accent: config.iconColor.color, unit: unit)
         } else {
             staticContent
+        }
+    }
+
+    /// Une touche d'extension : son image occupe toute la case, son titre vient par-dessus.
+    /// Un titre saisi par l'utilisateur passe avant celui de l'extension.
+    @ViewBuilder private func pluginContent(_ plugin: PluginDisplay) -> some View {
+        ZStack {
+            if let image = plugin.image {
+                Image(decorative: image, scale: 1)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFill()
+                    .frame(width: side, height: side)
+            } else {
+                Image(systemName: plugin.isMissing ? "puzzlepiece.extension" : "hourglass")
+                    .font(.system(size: 30 * unit))
+                    .foregroundStyle(.white.opacity(0.45))
+            }
+            let text = config.title.isEmpty ? (plugin.title ?? "") : config.title
+            if !text.isEmpty {
+                VStack {
+                    if config.titlePosition != .top { Spacer(minLength: 0) }
+                    Text(text)
+                        .font(.system(size: config.titleSize * unit, weight: .semibold, design: .rounded))
+                        .foregroundStyle(config.titleColor.color)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.6)
+                        .shadow(color: .black.opacity(0.8), radius: 2 * unit)
+                    if config.titlePosition != .bottom { Spacer(minLength: 0) }
+                }
+                .padding(5 * unit)
+            }
+            if let flash = plugin.flash {
+                Color.black.opacity(0.55)
+                Image(systemName: flash == .ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .font(.system(size: 44 * unit))
+                    .foregroundStyle(flash == .ok ? Color.green : Color.yellow)
+            }
         }
     }
 
@@ -180,6 +223,15 @@ private struct IconMotion: ViewModifier {
             content.opacity(phase(1.2) < 0.5 ? 1 : 0.2)
         }
     }
+}
+
+/// Ce qu'une extension montre sur sa touche.
+struct PluginDisplay {
+    var image: CGImage?
+    var title: String?
+    var flash: PluginFace.Flash?
+    /// Vrai quand l'extension de cette touche n'est pas installée.
+    var isMissing: Bool
 }
 
 /// Le dessin d'une donnée vivante : valeur seule, anneau, barre ou courbe.
