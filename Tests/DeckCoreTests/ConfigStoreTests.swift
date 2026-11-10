@@ -70,7 +70,7 @@ final class ConfigStoreTests: XCTestCase {
     func testPluginGlobalSettingsAreEmptyAtFirstThenReadBack() throws {
         let store = ConfigStore(folder: folder)
         XCTAssertEqual(store.loadPluginSettings(), [:])
-        let settings: [String: JSONValue] = ["com.example.zeus": .object(["url": .string("https://zeus.example")])]
+        let settings: [String: JSONValue] = ["com.example.meteo": .object(["url": .string("https://meteo.example")])]
         try store.savePluginSettings(settings)
         XCTAssertEqual(ConfigStore(folder: folder).loadPluginSettings(), settings)
     }

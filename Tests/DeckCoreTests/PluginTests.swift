@@ -27,22 +27,22 @@ final class JSONValueTests: XCTestCase {
 final class PluginManifestTests: XCTestCase {
     private let json = """
     {
-      "Name": "Zeus", "UUID": "com.example.zeus", "Version": "1.0.0.0", "Author": "Moi", "Description": "Mesures",
+      "Name": "Météo", "UUID": "com.example.meteo", "Version": "1.0.0.0", "Author": "Moi", "Description": "Mesures",
       "Icon": "imgs/plugin", "CodePath": "bin/plugin.js", "SDKVersion": 2,
       "Nodejs": { "Version": "20" }, "Software": { "MinimumVersion": "6.5" },
       "Actions": [
-        { "UUID": "com.example.zeus.metric", "Name": "Mesure", "Icon": "imgs/metric", "Tooltip": "Affiche une mesure",
+        { "UUID": "com.example.meteo.metric", "Name": "Mesure", "Icon": "imgs/metric", "Tooltip": "Affiche une mesure",
           "PropertyInspectorPath": "ui/metric.html", "Controllers": ["Keypad"],
           "States": [ { "Image": "imgs/key" }, { "Image": "imgs/key-on", "Title": "On" } ] },
-        { "UUID": "com.example.zeus.dial", "Name": "Molette", "Controllers": ["Encoder"], "States": [ { "Image": "imgs/dial" } ] }
+        { "UUID": "com.example.meteo.dial", "Name": "Molette", "Controllers": ["Encoder"], "States": [ { "Image": "imgs/dial" } ] }
       ]
     }
     """
 
     func testReadsThePluginIdentityAndEntryPoint() throws {
         let manifest = try PluginManifest(json: Data(json.utf8))
-        XCTAssertEqual(manifest.name, "Zeus")
-        XCTAssertEqual(manifest.uuid, "com.example.zeus")
+        XCTAssertEqual(manifest.name, "Météo")
+        XCTAssertEqual(manifest.uuid, "com.example.meteo")
         XCTAssertEqual(manifest.version, "1.0.0.0")
         XCTAssertEqual(manifest.codePath, "bin/plugin.js")
         XCTAssertTrue(manifest.runsOnNode)
@@ -50,7 +50,7 @@ final class PluginManifestTests: XCTestCase {
 
     func testReadsActionsWithTheirStatesAndSettingsPage() throws {
         let action = try XCTUnwrap(PluginManifest(json: Data(json.utf8)).actions.first)
-        XCTAssertEqual(action.uuid, "com.example.zeus.metric")
+        XCTAssertEqual(action.uuid, "com.example.meteo.metric")
         XCTAssertEqual(action.name, "Mesure")
         XCTAssertEqual(action.propertyInspectorPath, "ui/metric.html")
         XCTAssertEqual(action.states.map(\.image), ["imgs/key", "imgs/key-on"])
@@ -58,7 +58,7 @@ final class PluginManifestTests: XCTestCase {
     }
 
     func testKeepsOnlyActionsThatWorkOnKeys() throws {
-        XCTAssertEqual(try PluginManifest(json: Data(json.utf8)).keyActions.map(\.uuid), ["com.example.zeus.metric"])
+        XCTAssertEqual(try PluginManifest(json: Data(json.utf8)).keyActions.map(\.uuid), ["com.example.meteo.metric"])
     }
 
     func testPrefersTheMacEntryPointAndFallsBackToThePluginSettingsPage() throws {
@@ -155,13 +155,13 @@ final class PluginMessageTests: XCTestCase {
     }
 
     func testRegistrationInfoDescribesTheHostAndItsDeck() throws {
-        let info = try object(PluginEvent.registrationInfo(pluginUUID: "com.example.zeus", pluginVersion: "1.0", device: "dev",
+        let info = try object(PluginEvent.registrationInfo(pluginUUID: "com.example.meteo", pluginVersion: "1.0", device: "dev",
                                                            deviceName: "StreamDock", columns: 5, rows: 3, language: "fr"))
         let application = try XCTUnwrap(info["application"] as? [String: Any])
         XCTAssertEqual(application["platform"] as? String, "mac")
         XCTAssertEqual(application["language"] as? String, "fr")
         XCTAssertNotNil(application["version"] as? String)
-        XCTAssertEqual((info["plugin"] as? [String: Any])?["uuid"] as? String, "com.example.zeus")
+        XCTAssertEqual((info["plugin"] as? [String: Any])?["uuid"] as? String, "com.example.meteo")
         let device = try XCTUnwrap((info["devices"] as? [[String: Any]])?.first)
         XCTAssertEqual(device["id"] as? String, "dev")
         XCTAssertEqual((device["size"] as? [String: Any])?["columns"] as? Int, 5)
@@ -197,7 +197,7 @@ final class DataURLTests: XCTestCase {
 final class PluginBindingTests: XCTestCase {
     func testAKeyBoundToAPluginSurvivesEncodingAndDecoding() throws {
         var key = KeyConfig(title: "GPU")
-        key.plugin = PluginBinding(action: "com.example.zeus.metric", context: "ctx-1", settings: .object(["node": .string("n1")]))
+        key.plugin = PluginBinding(action: "com.example.meteo.metric", context: "ctx-1", settings: .object(["node": .string("n1")]))
         XCTAssertEqual(try JSONDecoder().decode(KeyConfig.self, from: JSONEncoder().encode(key)), key)
         XCTAssertFalse(key.isBlank)
     }
