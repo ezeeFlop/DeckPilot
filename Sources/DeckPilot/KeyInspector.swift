@@ -131,12 +131,6 @@ private struct KeyEditor: View {
                 }
             }
 
-            if pressable && !showsSecondState && !isPluginKey {
-                Section("Extension") {
-                    PluginEditor(key: $key)
-                }
-            }
-
             if pressable && !isPluginKey {
                 Section("Action") {
                     ActionEditor(action: face.action)
@@ -148,6 +142,12 @@ private struct KeyEditor: View {
             if !showsSecondState && !isPluginKey {
                 Section("Second état") {
                     SecondStateEditor(key: $key, pressable: pressable)
+                }
+            }
+
+            if pressable && !showsSecondState && !isPluginKey {
+                Section("Extension") {
+                    PluginEditor(key: $key)
                 }
             }
 
@@ -660,7 +660,7 @@ private struct LiveStatus: View {
 // MARK: Action
 
 private enum ActionKind: String, CaseIterable, Identifiable {
-    case none, launchApp, openURL, openFile, shell, hotkey, typeText, media, shortcut, nextPage, previousPage, goToPage, back, brightness
+    case none, launchApp, openURL, openFile, shell, hotkey, typeText, media, shortcut, nextPage, previousPage, goToPage, back, brightness, sequence
     var id: String { rawValue }
 
     var label: String {
@@ -679,6 +679,7 @@ private enum ActionKind: String, CaseIterable, Identifiable {
         case .goToPage: return String(localized: "Aller à une page ou ouvrir un dossier")
         case .back: return String(localized: "Revenir en arrière")
         case .brightness: return String(localized: "Luminosité du boîtier")
+        case .sequence: return String(localized: "Plusieurs actions à la suite")
         }
     }
 
@@ -698,6 +699,7 @@ private enum ActionKind: String, CaseIterable, Identifiable {
         case .goToPage: self = .goToPage
         case .back: self = .back
         case .brightness: self = .brightness
+        case .sequence: self = .sequence
         }
     }
 }
@@ -705,10 +707,14 @@ private enum ActionKind: String, CaseIterable, Identifiable {
 private struct ActionEditor: View {
     @EnvironmentObject private var controller: DeckController
     @Binding var action: KeyAction
+    /// Libellé du choix : « Quand j'appuie » pour la touche, « Étape n » dans une suite.
+    var title: String = String(localized: "Quand j'appuie")
+    /// Une étape d'une suite ne peut pas être elle-même une suite.
+    var allowsSequence = true
 
     var body: some View {
-        Picker("Quand j'appuie", selection: Binding(get: { ActionKind(action) }, set: { change(to: $0) })) {
-            ForEach(ActionKind.allCases) { Text($0.label).tag($0) }
+        Picker(title, selection: Binding(get: { ActionKind(action) }, set: { change(to: $0) })) {
+            ForEach(ActionKind.allCases.filter { allowsSequence || $0 != .sequence }) { Text($0.label).tag($0) }
         }
         switch action {
         case .none, .nextPage, .previousPage, .back:
@@ -758,6 +764,8 @@ private struct ActionEditor: View {
                     Label(page.name, systemImage: page.isFolder ? "folder" : "square.grid.3x2").tag(page.id)
                 }
             }
+        case .sequence(let steps, let pause):
+            SequenceEditor(steps: steps, pause: pause) { action = .sequence(steps: $0, pause: $1) }
         case .brightness(let delta):
             Picker("Variation", selection: Binding(get: { delta }, set: { action = .brightness(delta: $0) })) {
                 Text("Plus lumineux").tag(20)
@@ -785,7 +793,61 @@ private struct ActionEditor: View {
         case .goToPage: action = .goToPage(controller.currentPage.id)
         case .back: action = .back
         case .brightness: action = .brightness(delta: 20)
+        case .sequence:
+            // L'action déjà réglée devient la première étape : on ne perd rien en passant à une suite.
+            action = .sequence(steps: action == .none ? [.none] : [action, .none], pause: 0.5)
         }
+    }
+}
+
+/// Les étapes d'une suite d'actions : chacune se règle comme une action simple, et se déplace ou se retire.
+private struct SequenceEditor: View {
+    let steps: [KeyAction]
+    let pause: Double
+    let change: ([KeyAction], Double) -> Void
+
+    var body: some View {
+        ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+            ActionEditor(action: Binding(get: { step }, set: { update(index, to: $0) }),
+                         title: String(localized: "Étape \(index + 1)"), allowsSequence: false)
+            HStack {
+                Button { move(index, by: -1) } label: { Image(systemName: "arrow.up") }
+                    .disabled(index == 0)
+                    .help("Monter cette étape")
+                Button { move(index, by: 1) } label: { Image(systemName: "arrow.down") }
+                    .disabled(index == steps.count - 1)
+                    .help("Descendre cette étape")
+                Spacer()
+                Button("Retirer l'étape", role: .destructive) {
+                    var next = steps
+                    next.remove(at: index)
+                    change(next, pause)
+                }
+                .disabled(steps.count < 2)
+            }
+            .buttonStyle(.borderless)
+        }
+        Button("Ajouter une étape") { change(steps + [.none], pause) }
+        Picker("Pause entre les étapes", selection: Binding(get: { pause }, set: { change(steps, $0) })) {
+            Text("Aucune").tag(0.0)
+            Text("0,2 s").tag(0.2)
+            Text("0,5 s").tag(0.5)
+            Text("1 s").tag(1.0)
+            Text("2 s").tag(2.0)
+            Text("5 s").tag(5.0)
+        }
+    }
+
+    private func update(_ index: Int, to step: KeyAction) {
+        var next = steps
+        next[index] = step
+        change(next, pause)
+    }
+
+    private func move(_ index: Int, by offset: Int) {
+        var next = steps
+        next.swapAt(index, index + offset)
+        change(next, pause)
     }
 }
 

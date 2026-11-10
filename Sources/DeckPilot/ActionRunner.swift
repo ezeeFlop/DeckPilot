@@ -8,7 +8,7 @@ enum ActionRunner {
     /// Rend un message d'erreur lisible, ou `nil` si l'action est partie.
     static func run(_ action: KeyAction) -> String? {
         switch action {
-        case .none, .nextPage, .previousPage, .goToPage, .back, .brightness:
+        case .none, .nextPage, .previousPage, .goToPage, .back, .brightness, .sequence:
             return nil
         case .launchApp(let path):
             guard FileManager.default.fileExists(atPath: path) else { return String(localized: "Application introuvable : \(path)") }

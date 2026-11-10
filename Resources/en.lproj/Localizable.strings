@@ -3,6 +3,11 @@
 "%" = "%";
 "%@ : %@" = "%@: %@";
 "%lld %%" = "%lld%%";
+"0,2 s" = "0.2 s";
+"0,5 s" = "0.5 s";
+"1 s" = "1 s";
+"2 s" = "2 s";
+"5 s" = "5 s";
 "Accueil" = "Home";
 "Action" = "Action";
 "Adresse invalide : %@" = "Invalid address: %@";
@@ -13,6 +18,7 @@
 "Afficher" = "Show";
 "Ajouter une application…" = "Add an application…";
 "Ajouter une page" = "Add a page";
+"Ajouter une étape" = "Add a step";
 "Alerter quand la valeur est basse" = "Alert when the value is low";
 "Aller à une page ou ouvrir un dossier" = "Go to a page or open a folder";
 "Animation" = "Animation";
@@ -68,6 +74,7 @@
 "DeckPilot" = "DeckPilot";
 "Dernière erreur" = "Last error";
 "Dernière lecture" = "Last reading";
+"Descendre cette étape" = "Move this step down";
 "Disque" = "Disk";
 "Dossier" = "Folder";
 "Décimales : %lld" = "Decimals: %lld";
@@ -114,6 +121,7 @@
 "Milieu" = "Middle";
 "Mise en veille" = "Sleep";
 "Moins lumineux" = "Dimmer";
+"Monter cette étape" = "Move this step up";
 "Monter le son" = "Volume up";
 "Muet" = "Mute";
 "Mémoire" = "Memory";
@@ -130,9 +138,11 @@
 "Page suivante" = "Next page";
 "Page" = "Page";
 "Pages" = "Pages";
+"Pause entre les étapes" = "Pause between steps";
 "Piste précédente" = "Previous track";
 "Piste suivante" = "Next track";
 "Plus lumineux" = "Brighter";
+"Plusieurs actions à la suite" = "Several actions in a row";
 "Position" = "Position";
 "Processeur" = "Processor";
 "Pulsation" = "Pulse";
@@ -148,6 +158,7 @@
 "Rechercher ou saisir un nom SF Symbols" = "Search, or type an SF Symbols name";
 "Relancée toutes les 5 secondes. Le second état est actif tant qu'elle réussit." = "Run every 5 seconds. The second state is on for as long as it succeeds.";
 "Renommer" = "Rename";
+"Retirer l'étape" = "Remove step";
 "Retirer" = "Remove";
 "Retour" = "Back";
 "Revenir en arrière" = "Go back";
@@ -197,6 +208,7 @@
 "say bonjour" = "say hello";
 "À chaque appui" = "On every press";
 "Élément" = "Item";
+"Étape %lld" = "Step %lld";
 "État 1" = "State 1";
 "État 2" = "State 2";
 "État réglé" = "State being edited";

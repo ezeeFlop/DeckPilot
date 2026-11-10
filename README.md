@@ -37,6 +37,8 @@ right; what you see in the window is what the deck displays.
   (processor, memory, disk, battery), a field read from a JSON API, or the output of a shell
   command. Draw it as a plain value, a ring, a bar or a sparkline, with orange and red
   thresholds; the gauge glides from one reading to the next. A clock and a date are built in.
+- **Several actions in a row.** One key can run a list of actions in order, with a pause
+  between them: open two apps, load a page, start the music.
 - **Two-state keys.** A key can have a second look and a second action. It switches on
   every press, or follows something real: the Mac's sound being muted, an application being
   open, or a command succeeding. A mute key that shows whether the sound is off, a key that
@@ -133,7 +135,7 @@ native program; key actions; titles, images (PNG, JPEG, SVG), states, OK and ale
 per-key and global settings; the settings page and its messages to the plugin.
 
 What is not: plugins written as an HTML page, dials and touch strips, profile switching,
-multi-actions, and the monitoring of other applications. Plugins bought on Elgato's
+a plugin's actions inside a list of actions, and the monitoring of other applications. Plugins bought on Elgato's
 marketplace have not been tried and may be tied to Elgato's software. A plugin's global
 settings, API keys included, are stored as plain text.
 

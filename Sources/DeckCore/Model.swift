@@ -71,6 +71,18 @@ public enum KeyAction: Codable, Hashable, Sendable {
     /// Revient à la page d'où l'on est entré dans un dossier.
     case back
     case brightness(delta: Int)
+    /// Plusieurs actions à la suite, séparées par `pause` secondes.
+    case sequence(steps: [KeyAction], pause: Double)
+
+    /// Les actions à exécuter, dans l'ordre : l'action elle-même, ou les étapes d'une suite mises à plat
+    /// et débarrassées des étapes vides.
+    public var steps: [KeyAction] {
+        switch self {
+        case .none: return []
+        case .sequence(let steps, _): return steps.flatMap(\.steps)
+        default: return [self]
+        }
+    }
 }
 
 public struct KeyConfig: Codable, Hashable, Sendable {

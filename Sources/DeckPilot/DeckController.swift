@@ -51,6 +51,7 @@ final class DeckController: ObservableObject {
     private var isAsleep = false
     private var presses = PressTracker()
     private var history = PageHistory()
+    private var sequence: Task<Bool, Never>?
     private var switcher = AutoSwitcher(ignoring: [Bundle.main.bundleIdentifier ?? "com.spongetheory.deckpilot"])
     private var renderer: ImageRenderer<KeyFaceView>?
     private var observers: [NSObjectProtocol] = []
@@ -291,14 +292,31 @@ final class DeckController: ObservableObject {
         states.pressed(page: currentPage.id, slot: input.key, key: key(at: input.key))
     }
 
+    /// Exécute l'action d'une touche. Une suite d'actions se déroule en arrière-plan, étape par étape ;
+    /// en relancer une arrête celle qui était en cours.
     func perform(_ action: KeyAction) {
+        guard case .sequence(_, let pause) = action else {
+            performStep(action)
+            return
+        }
+        sequence?.cancel()
+        sequence = Task { [weak self] in
+            await SequenceRunner.run(action.steps, pause: pause,
+                                     perform: { step in self?.performStep(step) ?? false },
+                                     sleep: { try? await Task.sleep(for: .seconds($0)) })
+        }
+    }
+
+    /// Exécute une action simple et dit si elle a réussi.
+    @discardableResult
+    private func performStep(_ action: KeyAction) -> Bool {
         switch action {
         case .nextPage: goToPage(config.pageIndex(after: currentPageIndex))
         case .previousPage: goToPage(config.pageIndex(before: currentPageIndex))
         case .goToPage(let id):
             guard let index = config.pageIndex(withID: id) else {
                 message = String(localized: "Cette page n'existe plus.")
-                return
+                return false
             }
             // On retient d'où l'on vient pour que « Revenir en arrière » nous y ramène.
             if config.pages[index].isFolder, index != currentPageIndex { history.enter(from: currentPage.id) }
@@ -311,8 +329,12 @@ final class DeckController: ObservableObject {
             }
         case .brightness(let delta): setBrightness(config.brightness + delta)
         default:
-            if let failure = ActionRunner.run(action) { message = failure }
+            if let failure = ActionRunner.run(action) {
+                message = failure
+                return false
+            }
         }
+        return true
     }
 
     private func sleepDeck() {
