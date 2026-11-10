@@ -3,6 +3,27 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.5.0</title>
+            <pubDate>Tue, 10 Nov 2026 13:33:26 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.5.0</sparkle:version>
+            <sparkle:shortVersionString>0.5.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Stream Deck plugins
+
+DeckPilot can now host plugins written for Elgato's Stream Deck with the official Node.js
+kit. A plugin draws its keys, receives their presses and shows its own settings page in the
+panel.
+
+Select a key, then under **Plugin** use **Install a plugin…** with a `.sdPlugin` folder or a
+`.streamDeckPlugin` file, and hand the key to one of the plugin's actions.
+
+Node.js must be installed on the Mac. Plugins written as an HTML page, dials, touch strips
+and profile switching are not supported. This first version has been tried with one plugin.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.5.0/DeckPilot-0.5.0.dmg" length="6026260" type="application/octet-stream" sparkle:edSignature="wyzLLvDUi+6FVtMo/0fkzXxWK4pODCjXpK5UsWYc4WzpAJ6fF+R5TryzejLnnl7u9h6zjacD5mOMzZuG0iCdAw=="/>
+        </item>
+        <item>
             <title>0.4.0</title>
             <pubDate>Tue, 10 Nov 2026 13:15:18 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
@@ -44,29 +65,6 @@ Then pick **State 2** at the top of the panel and set its title, icon, backgroun
 action with the same controls as the first state.
 ]]></description>
             <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.3.0/DeckPilot-0.3.0.dmg" length="5670736" type="application/octet-stream" sparkle:edSignature="Np6fnskwlnWMOlBQPkCsnUu7tiIZy9XcxCAfqNHmYo5is/SQ889rwIaQhbTa7+hEda68koYvh16R4Ao+9GalBA=="/>
-        </item>
-        <item>
-            <title>0.2.0</title>
-            <pubDate>Tue, 10 Nov 2026 13:00:54 +0100</pubDate>
-            <link>https://github.com/ezeeFlop/DeckPilot</link>
-            <sparkle:version>0.2.0</sparkle:version>
-            <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[## Live data on your keys
-
-A key can now show a number that keeps itself up to date:
-
-- a Mac measurement: processor, memory, disk, battery;
-- a field read from a JSON API;
-- the output of a shell command.
-
-Draw it as a value, a ring, a bar or a sparkline, set the range and the unit, and choose
-the thresholds where it turns orange and red. The gauge glides from one reading to the next.
-
-Pick it under **Live content** in a key's settings. It works on the three display-only
-cells of the strip too.
-]]></description>
-            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.2.0/DeckPilot-0.2.0.dmg" length="5528210" type="application/octet-stream" sparkle:edSignature="S4UdZxNlRHtg2VAEZ9cFPHAIL46xPT6D5pvn+OzjXG975flx2pr0w0d8shdQJDtoxJN7pB2QMAzCN+E4GivGAQ=="/>
         </item>
     </channel>
 </rss>
