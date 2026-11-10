@@ -3,6 +3,29 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.2.0</title>
+            <pubDate>Tue, 10 Nov 2026 13:00:54 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.2.0</sparkle:version>
+            <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Live data on your keys
+
+A key can now show a number that keeps itself up to date:
+
+- a Mac measurement: processor, memory, disk, battery;
+- a field read from a JSON API;
+- the output of a shell command.
+
+Draw it as a value, a ring, a bar or a sparkline, set the range and the unit, and choose
+the thresholds where it turns orange and red. The gauge glides from one reading to the next.
+
+Pick it under **Live content** in a key's settings. It works on the three display-only
+cells of the strip too.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.2.0/DeckPilot-0.2.0.dmg" length="5528210" type="application/octet-stream" sparkle:edSignature="S4UdZxNlRHtg2VAEZ9cFPHAIL46xPT6D5pvn+OzjXG975flx2pr0w0d8shdQJDtoxJN7pB2QMAzCN+E4GivGAQ=="/>
+        </item>
+        <item>
             <title>0.1.2</title>
             <pubDate>Tue, 10 Nov 2026 12:46:22 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
