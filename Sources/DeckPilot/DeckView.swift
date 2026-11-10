@@ -202,6 +202,9 @@ private struct SlotInteractions: ViewModifier {
             .contextMenu {
                 Button("Copier") { controller.copyKey(slot) }
                 Button("Coller") { controller.pasteKey(slot) }.disabled(!controller.canPaste)
+                if controller.layout.isPressable(slot: slot) {
+                    Button("Créer un dossier ici") { controller.createFolder(at: slot) }
+                }
                 Divider()
                 Button("Vider", role: .destructive) { controller.clearKey(slot) }
             }

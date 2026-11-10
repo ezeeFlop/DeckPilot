@@ -46,6 +46,8 @@ final class DeckController: ObservableObject {
     private var lastActivity = Date()
     private var isAsleep = false
     private var presses = PressTracker()
+    private var history = PageHistory()
+    private var switcher = AutoSwitcher(ignoring: [Bundle.main.bundleIdentifier ?? "com.spongetheory.deckpilot"])
     private var renderer: ImageRenderer<KeyFaceView>?
     private var observers: [NSObjectProtocol] = []
     private let start = Date()
@@ -92,6 +94,11 @@ final class DeckController: ObservableObject {
         observers.append(center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in self?.wakeDeck() }
         })
+        observers.append(center.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            let bundleID = app?.bundleIdentifier
+            Task { @MainActor in self?.frontmostChanged(to: bundleID) }
+        })
     }
 
     // MARK: Pages et touches
@@ -128,8 +135,32 @@ final class DeckController: ObservableObject {
         selectedSlot = nil
     }
 
+    /// Une application vient de passer au premier plan : montre sa page si elle en a une,
+    /// ou reviens à la page précédente si on quitte une application qui avait la sienne.
+    private func frontmostChanged(to bundleID: String?) {
+        guard let target = switcher.frontmostChanged(to: bundleID, pages: config.pages, current: currentPage.id),
+              let index = config.pageIndex(withID: target) else { return }
+        Self.log.notice("page « \(self.config.pages[index].name, privacy: .public) » affichée pour \(bundleID ?? "?", privacy: .public)")
+        goToPage(index)
+    }
+
+    /// Transforme une touche en porte d'entrée d'un nouveau dossier, qui contient déjà sa touche « Retour ».
+    func createFolder(at slot: Int) {
+        var key = self.key(at: slot)
+        if key.title.isEmpty { key.title = String(localized: "Dossier") }
+        if key.icon == .none { key.icon = .symbol("folder.fill") }
+        var folder = Page(name: key.title, isFolder: true)
+        folder.keys[layout.slot(row: 0, column: 0)] = KeyConfig(
+            title: String(localized: "Retour"), background: DeckColor(hex: "#1F2937")!, icon: .symbol("chevron.backward"),
+            action: .back)
+        key.action = .goToPage(folder.id)
+        setKey(key, at: slot)
+        config.pages.append(folder)
+    }
+
     func deletePage(_ id: UUID) {
         guard config.pages.count > 1, let index = config.pageIndex(withID: id) else { return }
+        history.forget(id)
         config.pages.remove(at: index)
         currentPageIndex = min(currentPageIndex, config.pages.count - 1)
     }
@@ -251,7 +282,19 @@ final class DeckController: ObservableObject {
         case .nextPage: goToPage(config.pageIndex(after: currentPageIndex))
         case .previousPage: goToPage(config.pageIndex(before: currentPageIndex))
         case .goToPage(let id):
-            if let index = config.pageIndex(withID: id) { goToPage(index) } else { message = String(localized: "Cette page n'existe plus.") }
+            guard let index = config.pageIndex(withID: id) else {
+                message = String(localized: "Cette page n'existe plus.")
+                return
+            }
+            // On retient d'où l'on vient pour que « Revenir en arrière » nous y ramène.
+            if config.pages[index].isFolder, index != currentPageIndex { history.enter(from: currentPage.id) }
+            goToPage(index)
+        case .back:
+            if let origin = history.back(), let index = config.pageIndex(withID: origin) {
+                goToPage(index)
+            } else if currentPage.isFolder {
+                goToPage(config.pageIndex(after: currentPageIndex))
+            }
         case .brightness(let delta): setBrightness(config.brightness + delta)
         default:
             if let failure = ActionRunner.run(action) { message = failure }

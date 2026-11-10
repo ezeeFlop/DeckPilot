@@ -41,7 +41,11 @@ right; what you see in the window is what the deck displays.
   every press, or follows something real: the Mac's sound being muted, an application being
   open, or a command succeeding. A mute key that shows whether the sound is off, a key that
   turns red while a recording runs.
-- **Pages.** As many pages of keys as you want, switchable from a key or from the menu bar.
+- **Pages and folders.** As many pages of keys as you want, switchable from a key or from
+  the menu bar. A folder is a page opened from a key, with a Back key to leave it; right-click
+  a key and choose "Create a folder here".
+- **Pages that follow your apps.** Link applications to a page and the deck shows it when
+  one of them comes to the front, then returns to where it was when you leave.
 - **French and English.** The interface follows your system language.
 - **Stays out of the way.** It lives in the menu bar, reconnects when the deck is plugged
   back in, can dim the deck after a period without a key press, and uses about 0.2 % CPU

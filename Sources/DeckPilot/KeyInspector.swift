@@ -581,7 +581,7 @@ private struct LiveStatus: View {
 // MARK: Action
 
 private enum ActionKind: String, CaseIterable, Identifiable {
-    case none, launchApp, openURL, openFile, shell, hotkey, typeText, media, shortcut, nextPage, previousPage, goToPage, brightness
+    case none, launchApp, openURL, openFile, shell, hotkey, typeText, media, shortcut, nextPage, previousPage, goToPage, back, brightness
     var id: String { rawValue }
 
     var label: String {
@@ -597,7 +597,8 @@ private enum ActionKind: String, CaseIterable, Identifiable {
         case .shortcut: return String(localized: "Lancer un raccourci de l'app Raccourcis")
         case .nextPage: return String(localized: "Page suivante")
         case .previousPage: return String(localized: "Page précédente")
-        case .goToPage: return String(localized: "Aller à une page")
+        case .goToPage: return String(localized: "Aller à une page ou ouvrir un dossier")
+        case .back: return String(localized: "Revenir en arrière")
         case .brightness: return String(localized: "Luminosité du boîtier")
         }
     }
@@ -616,6 +617,7 @@ private enum ActionKind: String, CaseIterable, Identifiable {
         case .nextPage: self = .nextPage
         case .previousPage: self = .previousPage
         case .goToPage: self = .goToPage
+        case .back: self = .back
         case .brightness: self = .brightness
         }
     }
@@ -630,7 +632,7 @@ private struct ActionEditor: View {
             ForEach(ActionKind.allCases) { Text($0.label).tag($0) }
         }
         switch action {
-        case .none, .nextPage, .previousPage:
+        case .none, .nextPage, .previousPage, .back:
             EmptyView()
         case .launchApp(let path):
             LabeledContent("Application") {
@@ -673,7 +675,9 @@ private struct ActionEditor: View {
             TextField("Nom du raccourci", text: Binding(get: { name }, set: { action = .shortcut(name: $0) }))
         case .goToPage(let id):
             Picker("Page", selection: Binding(get: { id }, set: { action = .goToPage($0) })) {
-                ForEach(controller.config.pages) { Text($0.name).tag($0.id) }
+                ForEach(controller.config.pages) { page in
+                    Label(page.name, systemImage: page.isFolder ? "folder" : "square.grid.3x2").tag(page.id)
+                }
             }
         case .brightness(let delta):
             Picker("Variation", selection: Binding(get: { delta }, set: { action = .brightness(delta: $0) })) {
@@ -700,6 +704,7 @@ private struct ActionEditor: View {
         case .nextPage: action = .nextPage
         case .previousPage: action = .previousPage
         case .goToPage: action = .goToPage(controller.currentPage.id)
+        case .back: action = .back
         case .brightness: action = .brightness(delta: 20)
         }
     }

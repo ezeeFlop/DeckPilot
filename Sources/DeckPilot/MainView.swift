@@ -72,6 +72,7 @@ private struct MessageBanner: View {
 private struct Sidebar: View {
     @EnvironmentObject private var controller: DeckController
     @State private var renaming: UUID?
+    @State private var editingApps: UUID?
     @FocusState private var nameFieldFocused: Bool
 
     private func rename(_ id: UUID) {
@@ -94,12 +95,27 @@ private struct Sidebar: View {
                                     .onSubmit { renaming = nil }
                                     .onChange(of: nameFieldFocused) { _, focused in if !focused { renaming = nil } }
                             } else {
-                                Text(page.name.isEmpty ? String(localized: "Sans nom") : page.name)
+                                HStack(spacing: 6) {
+                                    Label(page.name.isEmpty ? String(localized: "Sans nom") : page.name,
+                                          systemImage: page.isFolder ? "folder" : "square.grid.3x2")
+                                    Spacer(minLength: 0)
+                                    if !page.apps.isEmpty {
+                                        Image(systemName: "macwindow.badge.plus")
+                                            .foregroundStyle(.secondary)
+                                            .help("S'affiche d'elle-même quand ses applications passent au premier plan")
+                                    }
+                                }
                             }
                         }
                         .tag(page.id)
+                        .popover(isPresented: Binding(get: { editingApps == page.id }, set: { if !$0 { editingApps = nil } }),
+                                 arrowEdge: .trailing) {
+                            PageAppsEditor(page: $page)
+                        }
                         .contextMenu {
                             Button("Renommer") { rename(page.id) }
+                            Button("Applications associées…") { editingApps = page.id }
+                            Button(page.isFolder ? "En faire une page ordinaire" : "En faire un dossier") { page.isFolder.toggle() }
                             Button("Supprimer la page", role: .destructive) { controller.deletePage(page.id) }
                                 .disabled(controller.config.pages.count < 2)
                         }
@@ -150,5 +166,50 @@ private struct Sidebar: View {
             .help("Éteint les écrans du boîtier quand aucune touche n'a été pressée depuis ce délai")
         }
         .padding(14)
+    }
+}
+
+/// Les applications qui font apparaître une page d'elles-mêmes en passant au premier plan.
+private struct PageAppsEditor: View {
+    @Binding var page: Page
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Afficher « \(page.name) » quand l'une de ces applications passe au premier plan")
+                .font(.headline)
+                .fixedSize(horizontal: false, vertical: true)
+            if page.apps.isEmpty {
+                Text("Aucune application pour l'instant.")
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(page.apps, id: \.self) { bundleID in
+                HStack(spacing: 8) {
+                    if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+                        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                            .resizable()
+                            .frame(width: 22, height: 22)
+                        Text(url.deletingPathExtension().lastPathComponent)
+                    } else {
+                        Image(systemName: "questionmark.app")
+                            .frame(width: 22, height: 22)
+                        Text(bundleID)
+                    }
+                    Spacer()
+                    Button("Retirer") { page.apps.removeAll { $0 == bundleID } }
+                        .buttonStyle(.borderless)
+                }
+            }
+            Button("Ajouter une application…") {
+                guard let url = Panels.chooseApplication(), let bundleID = Bundle(url: url)?.bundleIdentifier,
+                      !page.apps.contains(bundleID) else { return }
+                page.apps.append(bundleID)
+            }
+            Text("En quittant ces applications, le boîtier revient à la page où il était.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(width: 340)
     }
 }

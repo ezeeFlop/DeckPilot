@@ -68,6 +68,8 @@ public enum KeyAction: Codable, Hashable, Sendable {
     case nextPage
     case previousPage
     case goToPage(UUID)
+    /// Revient à la page d'où l'on est entré dans un dossier.
+    case back
     case brightness(delta: Int)
 }
 
@@ -120,11 +122,27 @@ public struct Page: Codable, Hashable, Identifiable, Sendable {
     public var name: String
     /// Cases configurées, par numéro matériel (1 à 18). Une case absente est vide.
     public var keys: [Int: KeyConfig]
+    /// Un dossier s'ouvre depuis une touche et reste hors du défilement « page suivante / précédente ».
+    public var isFolder: Bool
+    /// Identifiants des applications qui font apparaître cette page quand elles passent au premier plan.
+    public var apps: [String]
 
-    public init(id: UUID = UUID(), name: String, keys: [Int: KeyConfig] = [:]) {
+    public init(id: UUID = UUID(), name: String, keys: [Int: KeyConfig] = [:], isFolder: Bool = false, apps: [String] = []) {
         self.id = id
         self.name = name
         self.keys = keys
+        self.isFolder = isFolder
+        self.apps = apps
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        keys = try container.decode([Int: KeyConfig].self, forKey: .keys)
+        // Absents des configurations écrites avant la version 0.4.
+        isFolder = try container.decodeIfPresent(Bool.self, forKey: .isFolder) ?? false
+        apps = try container.decodeIfPresent([String].self, forKey: .apps) ?? []
     }
 
     public func key(at slot: Int) -> KeyConfig { keys[slot] ?? KeyConfig() }
@@ -148,9 +166,20 @@ public struct DeckConfiguration: Codable, Hashable, Sendable {
         self.sleepAfterMinutes = sleepAfterMinutes
     }
 
-    public func pageIndex(after index: Int) -> Int { pages.isEmpty ? 0 : (index + 1) % pages.count }
+    /// Page ordinaire suivante, en boucle ; les dossiers sont sautés.
+    public func pageIndex(after index: Int) -> Int { ordinaryPageIndex(from: index, step: 1) }
 
-    public func pageIndex(before index: Int) -> Int { pages.isEmpty ? 0 : (index - 1 + pages.count) % pages.count }
+    /// Page ordinaire précédente, en boucle ; les dossiers sont sautés.
+    public func pageIndex(before index: Int) -> Int { ordinaryPageIndex(from: index, step: -1) }
+
+    private func ordinaryPageIndex(from index: Int, step: Int) -> Int {
+        guard !pages.isEmpty else { return 0 }
+        for offset in 1...pages.count {
+            let candidate = ((index + step * offset) % pages.count + pages.count) % pages.count
+            if !pages[candidate].isFolder { return candidate }
+        }
+        return index
+    }
 
     public func pageIndex(withID id: UUID) -> Int? { pages.firstIndex { $0.id == id } }
 
