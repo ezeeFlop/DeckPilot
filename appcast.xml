@@ -3,6 +3,25 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.1.2</title>
+            <pubDate>Tue, 10 Nov 2026 12:46:22 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.1.2</sparkle:version>
+            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## English interface
+
+DeckPilot now speaks English as well as French and follows your system language. On a
+first launch, the starter keys are named in your language too.
+
+## Also in this version
+
+- You can start DeckPilot on another settings folder with `-configFolder /path`, handy for
+  trying a layout without touching your own.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.1.2/DeckPilot-0.1.2.dmg" length="5267581" type="application/octet-stream" sparkle:edSignature="DVrsxe6w8i6BF0gHeYN9vP0fTCA+qoh2alPE+IZY35XZJVjWUilDYUFVknCIoGi9KyWUUQ9IqtLk0gjd/QDhCw=="/>
+        </item>
+        <item>
             <title>0.1.1</title>
             <pubDate>Tue, 10 Nov 2026 12:37:42 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
