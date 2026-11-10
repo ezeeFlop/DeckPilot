@@ -1,0 +1,28 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>DeckPilot</title>
+        <item>
+            <title>0.1.1</title>
+            <pubDate>Tue, 10 Nov 2026 12:37:42 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.1.1</sparkle:version>
+            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Automatic updates
+
+DeckPilot can now update itself. It checks the release feed on GitHub, downloads the new
+version and installs it; every update is signed. You can check by hand from the DeckPilot
+menu or the menu bar icon, and turn automatic checks off there.
+
+Version 0.1.0 has no updater: install this version by hand once, and later ones will arrive
+on their own.
+
+## Also in this version
+
+- New app icon.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.1.1/DeckPilot-0.1.1.dmg" length="5250187" type="application/octet-stream" sparkle:edSignature="Q4AVGiH/9VuIt0DF+VVEI09CavHibRX6zUr8AcIQesUz9KIF/t7NopQCRvqO9ZAefKSav4K9Kw4fu1YhRl3EDA=="/>
+        </item>
+    </channel>
+</rss>
