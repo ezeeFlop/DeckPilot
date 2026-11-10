@@ -3,6 +3,27 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.4.0</title>
+            <pubDate>Tue, 10 Nov 2026 13:15:18 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.4.0</sparkle:version>
+            <sparkle:shortVersionString>0.4.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Folders
+
+Right-click a key and choose **Create a folder here**: the key now opens a page of its own,
+which already has its **Back** key. Folders stay out of the next/previous page cycle. Any
+page can be turned into a folder, or back into an ordinary page, from its menu in the sidebar.
+
+## Pages that follow your apps
+
+Right-click a page in the sidebar and choose **Linked applications…**. When one of them
+comes to the front, the deck shows that page; when you leave, it returns to the page it
+was on.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.4.0/DeckPilot-0.4.0.dmg" length="5733611" type="application/octet-stream" sparkle:edSignature="gryrfNZlx20EiPdW/d7kTvQSOIM2EkGjnQ3WY0I/9UHQ3LyZGCElVInsYa/Aqb3UifapQxVRd0KSgrfepehYCw=="/>
+        </item>
+        <item>
             <title>0.3.0</title>
             <pubDate>Tue, 10 Nov 2026 13:07:48 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
@@ -46,25 +67,6 @@ Pick it under **Live content** in a key's settings. It works on the three displa
 cells of the strip too.
 ]]></description>
             <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.2.0/DeckPilot-0.2.0.dmg" length="5528210" type="application/octet-stream" sparkle:edSignature="S4UdZxNlRHtg2VAEZ9cFPHAIL46xPT6D5pvn+OzjXG975flx2pr0w0d8shdQJDtoxJN7pB2QMAzCN+E4GivGAQ=="/>
-        </item>
-        <item>
-            <title>0.1.2</title>
-            <pubDate>Tue, 10 Nov 2026 12:46:22 +0100</pubDate>
-            <link>https://github.com/ezeeFlop/DeckPilot</link>
-            <sparkle:version>0.1.2</sparkle:version>
-            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[## English interface
-
-DeckPilot now speaks English as well as French and follows your system language. On a
-first launch, the starter keys are named in your language too.
-
-## Also in this version
-
-- You can start DeckPilot on another settings folder with `-configFolder /path`, handy for
-  trying a layout without touching your own.
-]]></description>
-            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.1.2/DeckPilot-0.1.2.dmg" length="5267581" type="application/octet-stream" sparkle:edSignature="DVrsxe6w8i6BF0gHeYN9vP0fTCA+qoh2alPE+IZY35XZJVjWUilDYUFVknCIoGi9KyWUUQ9IqtLk0gjd/QDhCw=="/>
         </item>
     </channel>
 </rss>
