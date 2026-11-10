@@ -19,6 +19,8 @@ right; what you see in the window is what the deck displays.
 
 ![A "Monitor" layout: processor, memory, disk and battery gauges, a load sparkline, a value read from a web API](docs/images/monitor.png)
 
+![A two-state key: "On air" in red while a command succeeds, with State 1 and State 2 in the settings panel](docs/images/states.png)
+
 ## What it does
 
 - **Keys you configure by looking at them.** The window shows the deck as it sits on your
@@ -35,6 +37,10 @@ right; what you see in the window is what the deck displays.
   (processor, memory, disk, battery), a field read from a JSON API, or the output of a shell
   command. Draw it as a plain value, a ring, a bar or a sparkline, with orange and red
   thresholds; the gauge glides from one reading to the next. A clock and a date are built in.
+- **Two-state keys.** A key can have a second look and a second action. It switches on
+  every press, or follows something real: the Mac's sound being muted, an application being
+  open, or a command succeeding. A mute key that shows whether the sound is off, a key that
+  turns red while a recording runs.
 - **Pages.** As many pages of keys as you want, switchable from a key or from the menu bar.
 - **French and English.** The interface follows your system language.
 - **Stays out of the way.** It lives in the menu bar, reconnects when the deck is plugged

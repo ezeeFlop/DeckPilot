@@ -132,9 +132,11 @@ struct SlotFace: View {
     @EnvironmentObject private var controller: DeckController
     let slot: Int
     let side: CGFloat
+    /// Force l'état montré (pour l'aperçu du panneau de réglage) ; `nil` montre l'état réel.
+    var showingSecondState: Bool?
 
     var body: some View {
-        let key = controller.key(at: slot)
+        let key = showingSecondState.map { controller.key(at: slot).resolved(active: $0) } ?? controller.shownKey(at: slot)
         if let settings = key.live, settings.source != .none {
             LiveFace(engine: controller.live, clock: controller.animation) {
                 face(key, time: 0, live: controller.liveDisplay(slot: slot, key: key))

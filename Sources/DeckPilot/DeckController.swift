@@ -27,6 +27,8 @@ final class DeckController: ObservableObject {
     /// pour que seules les cases animées se redessinent à chaque image, pas toute la fenêtre.
     let animation = AnimationClock()
     let live = LiveDataEngine()
+    let states = KeyStateEngine()
+    private var stateObservation: AnyCancellable?
     private var wasAnimating = false
     private var time: TimeInterval { animation.time }
     private var clock: TimeInterval = 0
@@ -71,6 +73,8 @@ final class DeckController: ObservableObject {
             self?.sent.removeAll()
         }
         deck.start()
+        // Un changement d'état d'une touche doit redessiner la fenêtre comme un changement de réglage.
+        stateObservation = states.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
         // `-select 13` au lancement ouvre directement le réglage de cette case.
         let requested = UserDefaults.standard.integer(forKey: "select")
         if layout.slots.contains(requested) { selectedSlot = requested }
@@ -97,7 +101,13 @@ final class DeckController: ObservableObject {
         set { config.pages[min(currentPageIndex, config.pages.count - 1)] = newValue }
     }
 
+    /// La touche telle qu'elle est réglée (premier état).
     func key(at slot: Int) -> KeyConfig { currentPage.key(at: slot) }
+
+    /// La touche telle qu'elle se présente maintenant, second état compris.
+    func shownKey(at slot: Int) -> KeyConfig {
+        key(at: slot).resolved(active: states.isActive(page: currentPage.id, slot: slot))
+    }
 
     func setKey(_ key: KeyConfig, at slot: Int) {
         currentPage.keys[slot] = key.isBlank ? nil : key
@@ -136,13 +146,19 @@ final class DeckController: ObservableObject {
         var page = currentPage
         page.swapKeys(a, b)
         for slot in [a, b] where !layout.isPressable(slot: slot) {
-            if var key = page.keys[slot] {
-                key.action = .none
-                page.keys[slot] = key
-            }
+            if let key = page.keys[slot] { page.keys[slot] = displayOnly(key) }
         }
         currentPage = page
         selectedSlot = b
+    }
+
+    /// Une case d'affichage ne s'enfonce pas : ni action, ni bascule à l'appui.
+    private func displayOnly(_ key: KeyConfig) -> KeyConfig {
+        var key = key
+        key.action = .none
+        key.alternate?.action = .none
+        if key.alternate?.follows == .press { key.alternate = nil }
+        return key
     }
 
     func copyKey(_ slot: Int) { clipboard = key(at: slot) }
@@ -150,9 +166,8 @@ final class DeckController: ObservableObject {
     var canPaste: Bool { clipboard != nil }
 
     func pasteKey(_ slot: Int) {
-        guard var key = clipboard else { return }
-        if !layout.isPressable(slot: slot) { key.action = .none }
-        setKey(key, at: slot)
+        guard let key = clipboard else { return }
+        setKey(layout.isPressable(slot: slot) ? key : displayOnly(key), at: slot)
     }
 
     func clearKey(_ slot: Int) { setKey(KeyConfig(), at: slot) }
@@ -227,7 +242,8 @@ final class DeckController: ObservableObject {
         clock = Date().timeIntervalSince(start)
         presses.press(input.key, at: clock)
         pressedSlots = presses.held(at: clock)
-        perform(key(at: input.key).action)
+        perform(shownKey(at: input.key).action)
+        states.pressed(page: currentPage.id, slot: input.key, key: key(at: input.key))
     }
 
     func perform(_ action: KeyAction) {
@@ -261,8 +277,9 @@ final class DeckController: ObservableObject {
     private func tick() {
         clock = Date().timeIntervalSince(start)
         live.update(page: currentPage, clock: clock)
+        states.update(page: currentPage, clock: clock)
         // Un battement de plus après la fin d'une animation, pour que la dernière image montre la valeur d'arrivée.
-        let animating = currentPage.keys.values.contains(where: isAnimated) || live.hasRunningTransition(clock: clock)
+        let animating = layout.slots.contains { isAnimated(shownKey(at: $0)) } || live.hasRunningTransition(clock: clock)
         if animating || wasAnimating { animation.time = clock }
         wasAnimating = animating
         let held = presses.held(at: clock)
@@ -281,7 +298,7 @@ final class DeckController: ObservableObject {
         guard isConnected, !isAsleep, !deck.isBusy else { return }
         var changed = false
         for slot in layout.slots {
-            let key = key(at: slot)
+            let key = shownKey(at: slot)
             let signature = signature(of: key, slot: slot)
             guard sent[slot] != signature else { continue }
             sent[slot] = signature

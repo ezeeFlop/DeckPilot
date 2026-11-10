@@ -88,6 +88,8 @@ public struct KeyConfig: Codable, Hashable, Sendable {
     public var action: KeyAction
     /// Donnée vivante affichée à la place de l'icône ; `nil` pour une case ordinaire.
     public var live: LiveData?
+    /// Second état de la touche ; `nil` pour une touche à un seul état.
+    public var alternate: KeyAlternate?
 
     public init(title: String = "", titleColor: DeckColor = .white, titleSize: Double = 15,
                 titlePosition: TitlePosition = .bottom, background: DeckColor = .black,

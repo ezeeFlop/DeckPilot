@@ -32,12 +32,23 @@ private struct KeyEditor: View {
     let slot: Int
     @Binding var key: KeyConfig
     let pressable: Bool
+    /// Vrai quand le panneau règle le second état de la touche.
+    @State private var editsSecondState = false
+
+    private var showsSecondState: Bool { editsSecondState && key.alternate != nil }
+
+    /// L'état en cours de réglage : la touche elle-même, ou son second état vu comme une touche.
+    private var face: Binding<KeyConfig> {
+        guard showsSecondState else { return $key }
+        return Binding(get: { key.resolved(active: true) }, set: { key.updateAlternate(from: $0) })
+    }
 
     var body: some View {
+        let face = self.face
         Form {
             Section {
                 HStack(spacing: 14) {
-                    SlotFace(slot: slot, side: 84)
+                    SlotFace(slot: slot, side: 84, showingSecondState: showsSecondState)
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     VStack(alignment: .leading, spacing: 3) {
                         Text(pressable ? "Touche \(slot)" : "Case d'affichage \(slot)")
@@ -47,13 +58,21 @@ private struct KeyEditor: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                if key.alternate != nil {
+                    Picker("État réglé", selection: $editsSecondState) {
+                        Text("État 1").tag(false)
+                        Text("État 2").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                }
             }
 
             Section("Titre") {
-                TextField("Texte", text: $key.title, prompt: Text("Aucun"))
-                ColorPicker("Couleur", selection: color(\.titleColor), supportsOpacity: false)
-                LabeledContent("Taille") { Slider(value: $key.titleSize, in: 9...30) }
-                Picker("Position", selection: $key.titlePosition) {
+                TextField("Texte", text: face.title, prompt: Text("Aucun"))
+                ColorPicker("Couleur", selection: color(face, \.titleColor), supportsOpacity: false)
+                LabeledContent("Taille") { Slider(value: face.titleSize, in: 9...30) }
+                Picker("Position", selection: face.titlePosition) {
                     Text("Haut").tag(TitlePosition.top)
                     Text("Milieu").tag(TitlePosition.middle)
                     Text("Bas").tag(TitlePosition.bottom)
@@ -64,10 +83,11 @@ private struct KeyEditor: View {
             // Une case qui montre une donnée, l'heure ou la date n'affiche pas d'icône : sa section est masquée.
             if !showsLiveContent {
                 Section("Icône") {
-                    IconEditor(key: $key)
-                    if key.icon != .none {
-                        LabeledContent("Taille") { Slider(value: $key.iconScale, in: 0.2...1) }
-                        Picker("Animation", selection: Binding(get: { key.animation }, set: { key.animation = $0 })) {
+                    IconEditor(key: face)
+                    if face.wrappedValue.icon != .none {
+                        LabeledContent("Taille") { Slider(value: face.iconScale, in: 0.2...1) }
+                        Picker("Animation", selection: Binding(get: { face.wrappedValue.animation },
+                                                               set: { face.wrappedValue.animation = $0 })) {
                             Text("Aucune").tag(KeyAnimation.none)
                             Text("Pulsation").tag(KeyAnimation.pulse)
                             Text("Rotation").tag(KeyAnimation.spin)
@@ -78,30 +98,42 @@ private struct KeyEditor: View {
                 }
             }
 
-            Section("Contenu vivant") {
-                LiveEditor(key: $key, slot: slot)
+            // Le contenu vivant est commun aux deux états : il se règle depuis le premier.
+            if !showsSecondState {
+                Section("Contenu vivant") {
+                    LiveEditor(key: $key, slot: slot)
+                }
             }
 
             Section("Fond") {
-                ColorPicker("Couleur", selection: color(\.background), supportsOpacity: false)
+                ColorPicker("Couleur", selection: color(face, \.background), supportsOpacity: false)
                 Toggle("Dégradé", isOn: Binding(
-                    get: { key.backgroundEnd != nil },
-                    set: { key.backgroundEnd = $0 ? DeckColor(red: key.background.red * 0.35, green: key.background.green * 0.35,
-                                                                 blue: key.background.blue * 0.35) : nil }
+                    get: { face.wrappedValue.backgroundEnd != nil },
+                    set: {
+                        let base = face.wrappedValue.background
+                        face.wrappedValue.backgroundEnd = $0
+                            ? DeckColor(red: base.red * 0.35, green: base.green * 0.35, blue: base.blue * 0.35) : nil
+                    }
                 ))
-                if key.backgroundEnd != nil {
+                if face.wrappedValue.backgroundEnd != nil {
                     ColorPicker("Couleur du bas", selection: Binding(
-                        get: { (key.backgroundEnd ?? .black).color },
-                        set: { key.backgroundEnd = DeckColor($0) }
+                        get: { (face.wrappedValue.backgroundEnd ?? .black).color },
+                        set: { face.wrappedValue.backgroundEnd = DeckColor($0) }
                     ), supportsOpacity: false)
                 }
             }
 
             if pressable {
                 Section("Action") {
-                    ActionEditor(action: $key.action)
-                    Button("Essayer maintenant") { controller.perform(key.action) }
-                        .disabled(key.action == .none)
+                    ActionEditor(action: face.action)
+                    Button("Essayer maintenant") { controller.perform(face.wrappedValue.action) }
+                        .disabled(face.wrappedValue.action == .none)
+                }
+            }
+
+            if !showsSecondState {
+                Section("Second état") {
+                    SecondStateEditor(key: $key, pressable: pressable)
                 }
             }
 
@@ -111,14 +143,101 @@ private struct KeyEditor: View {
             }
         }
         .formStyle(.grouped)
+        .onChange(of: key.alternate == nil) { _, removed in if removed { editsSecondState = false } }
     }
 
     private var showsLiveContent: Bool {
         key.widget != .none || (key.live.map { $0.source != .none } ?? false)
     }
 
-    private func color(_ path: WritableKeyPath<KeyConfig, DeckColor>) -> Binding<Color> {
-        Binding(get: { key[keyPath: path].color }, set: { key[keyPath: path] = DeckColor($0) })
+    private func color(_ face: Binding<KeyConfig>, _ path: WritableKeyPath<KeyConfig, DeckColor>) -> Binding<Color> {
+        Binding(get: { face.wrappedValue[keyPath: path].color }, set: { face.wrappedValue[keyPath: path] = DeckColor($0) })
+    }
+}
+
+// MARK: Second état
+
+private enum SecondStateKind: String, CaseIterable, Identifiable {
+    case never, press, muted, appRunning, command
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .never: return String(localized: "Jamais")
+        case .press: return String(localized: "À chaque appui")
+        case .muted: return String(localized: "Quand le son du Mac est coupé")
+        case .appRunning: return String(localized: "Quand une application est ouverte")
+        case .command: return String(localized: "Quand une commande réussit")
+        }
+    }
+
+    init(_ source: StateSource?) {
+        switch source {
+        case nil: self = .never
+        case .press: self = .press
+        case .muted: self = .muted
+        case .appRunning: self = .appRunning
+        case .command: self = .command
+        }
+    }
+}
+
+/// Choix de ce qui fait passer la touche dans son second état.
+private struct SecondStateEditor: View {
+    @Binding var key: KeyConfig
+    let pressable: Bool
+
+    private var kinds: [SecondStateKind] {
+        // Une case d'affichage ne s'enfonce pas : elle ne peut pas basculer à l'appui.
+        SecondStateKind.allCases.filter { pressable || $0 != .press }
+    }
+
+    var body: some View {
+        Picker("Changer d'aspect", selection: Binding(get: { SecondStateKind(key.alternate?.follows) }, set: { change(to: $0) })) {
+            ForEach(kinds) { Text($0.label).tag($0) }
+        }
+        switch key.alternate?.follows {
+        case .appRunning(let path):
+            LabeledContent("Application") {
+                Button(path.isEmpty ? String(localized: "Choisir…") : URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent) {
+                    if let url = Panels.chooseApplication() { key.alternate?.follows = .appRunning(path: url.path) }
+                }
+            }
+        case .command(let command):
+            TextField("Commande", text: Binding(get: { command }, set: { key.alternate?.follows = .command($0) }),
+                      prompt: Text("pgrep -x Safari"), axis: .vertical)
+                .lineLimit(1...3)
+                .font(.system(.body, design: .monospaced))
+                .help("Relancée toutes les 5 secondes. Le second état est actif tant qu'elle réussit.")
+        default:
+            EmptyView()
+        }
+        if key.alternate != nil {
+            Text("Choisis « État 2 » en haut du panneau pour régler son aspect et son action.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func change(to kind: SecondStateKind) {
+        guard kind != SecondStateKind(key.alternate?.follows) else { return }
+        let source: StateSource
+        switch kind {
+        case .never:
+            key.alternate = nil
+            return
+        case .press: source = .press
+        case .muted: source = .muted
+        case .appRunning:
+            guard let url = Panels.chooseApplication() else { return }
+            source = .appRunning(path: url.path)
+        case .command: source = .command("")
+        }
+        if key.alternate == nil {
+            key.alternate = KeyAlternate(follows: source, from: key)
+        } else {
+            key.alternate?.follows = source
+        }
     }
 }
 
