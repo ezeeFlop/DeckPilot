@@ -14,6 +14,13 @@ public struct ConfigStore: Sendable {
         return ConfigStore(folder: base.appendingPathComponent("DeckPilot", isDirectory: true))
     }
 
+    /// Le rangement à utiliser pour ce lancement : le dossier habituel, ou celui du réglage `configFolder`
+    /// (`DeckPilot.app/Contents/MacOS/DeckPilot -configFolder /chemin`), pratique pour essayer une autre configuration.
+    public static func forLaunch(defaults: UserDefaults = .standard) -> ConfigStore {
+        guard let path = defaults.string(forKey: "configFolder"), !path.isEmpty else { return .standard }
+        return ConfigStore(folder: URL(fileURLWithPath: path, isDirectory: true))
+    }
+
     private var configURL: URL { folder.appendingPathComponent("config.json") }
     private var imagesFolder: URL { folder.appendingPathComponent("images", isDirectory: true) }
 

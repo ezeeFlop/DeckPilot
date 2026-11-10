@@ -152,22 +152,22 @@ public struct DeckConfiguration: Codable, Hashable, Sendable {
     /// Configuration proposée au premier lancement : quelques touches utiles pour montrer ce qui est possible.
     public static var starter: DeckConfiguration {
         let night = DeckColor(hex: "#14213D")!
-        var page = Page(name: "Accueil")
+        var page = Page(name: String(localized: "Accueil"))
         page.keys[13] = KeyConfig(title: "Safari", background: night, icon: .appIcon("/Applications/Safari.app"), iconScale: 0.8,
                                   action: .launchApp(path: "/Applications/Safari.app"))
         page.keys[10] = KeyConfig(title: "Terminal", background: night,
                                   icon: .appIcon("/System/Applications/Utilities/Terminal.app"), iconScale: 0.8,
                                   action: .launchApp(path: "/System/Applications/Utilities/Terminal.app"))
-        page.keys[7] = KeyConfig(title: "Réglages", background: night,
+        page.keys[7] = KeyConfig(title: String(localized: "Réglages"), background: night,
                                  icon: .appIcon("/System/Applications/System Settings.app"), iconScale: 0.8,
                                  action: .launchApp(path: "/System/Applications/System Settings.app"))
-        page.keys[15] = KeyConfig(title: "Muet", background: DeckColor(hex: "#3D1A1A")!, icon: .symbol("speaker.slash.fill"),
+        page.keys[15] = KeyConfig(title: String(localized: "Muet"), background: DeckColor(hex: "#3D1A1A")!, icon: .symbol("speaker.slash.fill"),
                                   action: .media(.mute))
         page.keys[12] = KeyConfig(title: "Vol −", background: DeckColor(hex: "#1F2937")!, icon: .symbol("speaker.minus.fill"),
                                   action: .media(.volumeDown))
         page.keys[9] = KeyConfig(title: "Vol +", background: DeckColor(hex: "#1F2937")!, icon: .symbol("speaker.plus.fill"),
                                  action: .media(.volumeUp))
-        page.keys[6] = KeyConfig(title: "Lecture", background: DeckColor(hex: "#1F2937")!, icon: .symbol("playpause.fill"),
+        page.keys[6] = KeyConfig(title: String(localized: "Lecture"), background: DeckColor(hex: "#1F2937")!, icon: .symbol("playpause.fill"),
                                  action: .media(.playPause))
         page.keys[16] = KeyConfig(background: DeckColor(hex: "#0B132B")!, widget: .clock)
         page.keys[17] = KeyConfig(background: DeckColor(hex: "#0B132B")!, widget: .date)

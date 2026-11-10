@@ -10,7 +10,12 @@ I bought this deck, wanted a simple native app for it on my Mac, and ended up wr
 If you own the same deck and are in the same spot, this may save you the work. If you own
 a different MiraBox or Ajazz deck, the protocol notes below may still be useful.
 
-![The DeckPilot window: the deck drawn to scale, with its 15 keys and its display strip](docs/images/window.png)
+![A "Work" layout: apps on the top row, shortcuts in the middle, sound keys at the bottom, clock and date on the strip](docs/images/work.png)
+
+The window shows the deck as it sits on your desk. Click a key and its settings open on the
+right; what you see in the window is what the deck displays.
+
+![A "Studio" layout, with the Record key selected and its blink animation chosen](docs/images/studio.png)
 
 ## What it does
 
@@ -26,6 +31,7 @@ a different MiraBox or Ajazz deck, the protocol notes below may still be useful.
   played from the Mac, frame by frame.
 - **Live content.** A clock and a date, handy on the three display-only cells of the strip.
 - **Pages.** As many pages of keys as you want, switchable from a key or from the menu bar.
+- **French and English.** The interface follows your system language.
 - **Stays out of the way.** It lives in the menu bar, reconnects when the deck is plugged
   back in, can dim the deck after a period without a key press, and uses about 0.2 % CPU
   when nothing is animated.
@@ -121,7 +127,6 @@ The full notes, with what was read in the code and what was seen on the device, 
 ## Limits
 
 - **One deck model.** See above.
-- **The interface is in French.**
 - **Key releases are not always reported** by the deck, for a reason I have not found.
   Actions therefore fire on press, and there is no long-press action.
 - **The boot logo is not supported.** The command exists (`LOG`), but it writes to the

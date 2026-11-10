@@ -127,11 +127,11 @@ private enum IconKind: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .none: return "Aucune"
-        case .symbol: return "Symbole"
-        case .emoji: return "Emoji"
-        case .image: return "Image ou GIF"
-        case .app: return "Icône d'application"
+        case .none: return String(localized: "Aucune")
+        case .symbol: return String(localized: "Symbole")
+        case .emoji: return String(localized: "Emoji")
+        case .image: return String(localized: "Image ou GIF")
+        case .app: return String(localized: "Icône d'application")
         }
     }
 
@@ -202,13 +202,13 @@ private struct IconEditor: View {
     private func chooseImage() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.image]
-        panel.message = "Choisis une image ou un GIF animé pour cette case."
+        panel.message = String(localized: "Choisis une image ou un GIF animé pour cette case.")
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             key.icon = .image(try controller.store.importImage(from: url))
             key.iconScale = 1
         } catch {
-            controller.message = "Image non copiée : \(error.localizedDescription)"
+            controller.message = String(localized: "Image non copiée : \(error.localizedDescription)")
         }
     }
 
@@ -289,19 +289,19 @@ private enum ActionKind: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .none: return "Aucune"
-        case .launchApp: return "Ouvrir une application"
-        case .openURL: return "Ouvrir un site"
-        case .openFile: return "Ouvrir un fichier ou un dossier"
-        case .shell: return "Lancer une commande"
-        case .hotkey: return "Raccourci clavier"
-        case .typeText: return "Saisir un texte"
-        case .media: return "Son et lecture"
-        case .shortcut: return "Lancer un raccourci de l'app Raccourcis"
-        case .nextPage: return "Page suivante"
-        case .previousPage: return "Page précédente"
-        case .goToPage: return "Aller à une page"
-        case .brightness: return "Luminosité du boîtier"
+        case .none: return String(localized: "Aucune")
+        case .launchApp: return String(localized: "Ouvrir une application")
+        case .openURL: return String(localized: "Ouvrir un site")
+        case .openFile: return String(localized: "Ouvrir un fichier ou un dossier")
+        case .shell: return String(localized: "Lancer une commande")
+        case .hotkey: return String(localized: "Raccourci clavier")
+        case .typeText: return String(localized: "Saisir un texte")
+        case .media: return String(localized: "Son et lecture")
+        case .shortcut: return String(localized: "Lancer un raccourci de l'app Raccourcis")
+        case .nextPage: return String(localized: "Page suivante")
+        case .previousPage: return String(localized: "Page précédente")
+        case .goToPage: return String(localized: "Aller à une page")
+        case .brightness: return String(localized: "Luminosité du boîtier")
         }
     }
 
@@ -345,7 +345,7 @@ private struct ActionEditor: View {
             TextField("Adresse", text: Binding(get: { text }, set: { action = .openURL($0) }), prompt: Text("exemple.fr"))
         case .openFile(let path):
             LabeledContent("Élément") {
-                Button(path.isEmpty ? "Choisir…" : URL(fileURLWithPath: path).lastPathComponent) {
+                Button(path.isEmpty ? String(localized: "Choisir…") : URL(fileURLWithPath: path).lastPathComponent) {
                     if let url = Panels.chooseFileOrFolder() { action = .openFile(path: url.path) }
                 }
             }
@@ -415,7 +415,7 @@ private struct HotkeyRecorder: View {
     @State private var monitor: Any?
 
     var body: some View {
-        Button(monitor != nil ? "Tape le raccourci…" : (display.isEmpty ? "Enregistrer" : display)) {
+        Button(monitor != nil ? String(localized: "Tape le raccourci…") : (display.isEmpty ? String(localized: "Enregistrer") : display)) {
             monitor == nil ? start() : stop()
         }
         .onDisappear { stop() }
@@ -436,7 +436,7 @@ private struct HotkeyRecorder: View {
     }
 
     private static let named: [UInt16: String] = [
-        36: "↩", 48: "⇥", 49: "Espace", 51: "⌫", 53: "⎋", 117: "⌦", 123: "←", 124: "→", 125: "↓", 126: "↑",
+        36: "↩", 48: "⇥", 49: String(localized: "Espace"), 51: "⌫", 53: "⎋", 117: "⌦", 123: "←", 124: "→", 125: "↓", 126: "↑",
         122: "F1", 120: "F2", 99: "F3", 118: "F4", 96: "F5", 97: "F6", 98: "F7", 100: "F8", 101: "F9", 109: "F10",
         103: "F11", 111: "F12", 115: "↖", 119: "↘", 116: "⇞", 121: "⇟",
     ]

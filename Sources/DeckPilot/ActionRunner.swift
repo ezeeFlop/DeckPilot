@@ -11,17 +11,17 @@ enum ActionRunner {
         case .none, .nextPage, .previousPage, .goToPage, .brightness:
             return nil
         case .launchApp(let path):
-            guard FileManager.default.fileExists(atPath: path) else { return "Application introuvable : \(path)" }
+            guard FileManager.default.fileExists(atPath: path) else { return String(localized: "Application introuvable : \(path)") }
             NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: path), configuration: .init())
             return nil
         case .openURL(let text):
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             let withScheme = trimmed.contains("://") || trimmed.hasPrefix("mailto:") ? trimmed : "https://" + trimmed
-            guard let url = URL(string: withScheme) else { return "Adresse invalide : \(text)" }
+            guard let url = URL(string: withScheme) else { return String(localized: "Adresse invalide : \(text)") }
             NSWorkspace.shared.open(url)
             return nil
         case .openFile(let path):
-            guard FileManager.default.fileExists(atPath: path) else { return "Fichier introuvable : \(path)" }
+            guard FileManager.default.fileExists(atPath: path) else { return String(localized: "Fichier introuvable : \(path)") }
             NSWorkspace.shared.open(URL(fileURLWithPath: path))
             return nil
         case .shell(let command):
@@ -54,7 +54,7 @@ enum ActionRunner {
     }
 
     private static let accessibilityMessage =
-        "Autorise DeckPilot dans Réglages Système › Confidentialité et sécurité › Accessibilité, puis réessaie."
+        String(localized: "Autorise DeckPilot dans Réglages Système › Confidentialité et sécurité › Accessibilité, puis réessaie.")
 
     private static func canPostEvents() -> Bool {
         if CGPreflightPostEventAccess() { return true }
@@ -72,7 +72,7 @@ enum ActionRunner {
             try process.run()
             return nil
         } catch {
-            return "Lancement impossible : \(error.localizedDescription)"
+            return String(localized: "Lancement impossible : \(error.localizedDescription)")
         }
     }
 
@@ -93,7 +93,10 @@ enum ActionRunner {
     private static func appleScript(_ source: String) -> String? {
         var error: NSDictionary?
         NSAppleScript(source: source)?.executeAndReturnError(&error)
-        return error.map { "Commande refusée : \($0[NSAppleScript.errorMessage] ?? "erreur inconnue")" }
+        return error.map {
+            let reason = $0[NSAppleScript.errorMessage] as? String ?? String(localized: "erreur inconnue")
+            return String(localized: "Commande refusée : \(reason)")
+        }
     }
 
     /// Touche multimédia du clavier (codes `NX_KEYTYPE_*`).

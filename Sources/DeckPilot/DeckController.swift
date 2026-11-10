@@ -48,11 +48,11 @@ final class DeckController: ObservableObject {
     private static let framesPerSecond = 12.0
     private static let log = Logger(subsystem: "com.spongetheory.deckpilot", category: "boitier")
 
-    init(store: ConfigStore = .standard) {
+    init(store: ConfigStore = .forLaunch()) {
         self.store = store
         self.icons = IconLibrary(store: store)
         self.config = store.load()
-        if config.pages.isEmpty { config.pages = [Page(name: "Accueil")] }
+        if config.pages.isEmpty { config.pages = [Page(name: String(localized: "Accueil"))] }
 
         deck.onConnect = { [weak self] in
             Self.log.notice("boîtier branché")
@@ -111,7 +111,7 @@ final class DeckController: ObservableObject {
     }
 
     func addPage() {
-        config.pages.append(Page(name: "Page \(config.pages.count + 1)"))
+        config.pages.append(Page(name: String(localized: "Page \(config.pages.count + 1)")))
         currentPageIndex = config.pages.count - 1
         selectedSlot = nil
     }
@@ -171,7 +171,7 @@ final class DeckController: ObservableObject {
                 key.icon = .image(try store.importImage(from: url))
                 key.iconScale = 1
             } catch {
-                message = "Image non copiée : \(error.localizedDescription)"
+                message = String(localized: "Image non copiée : \(error.localizedDescription)")
                 return
             }
         } else {
@@ -233,7 +233,7 @@ final class DeckController: ObservableObject {
         case .nextPage: goToPage(config.pageIndex(after: currentPageIndex))
         case .previousPage: goToPage(config.pageIndex(before: currentPageIndex))
         case .goToPage(let id):
-            if let index = config.pageIndex(withID: id) { goToPage(index) } else { message = "Cette page n'existe plus." }
+            if let index = config.pageIndex(withID: id) { goToPage(index) } else { message = String(localized: "Cette page n'existe plus.") }
         case .brightness(let delta): setBrightness(config.brightness + delta)
         default:
             if let failure = ActionRunner.run(action) { message = failure }
@@ -339,7 +339,7 @@ final class DeckController: ObservableObject {
         do {
             try store.save(config)
         } catch {
-            message = "Configuration non enregistrée : \(error.localizedDescription)"
+            message = String(localized: "Configuration non enregistrée : \(error.localizedDescription)")
         }
     }
 }

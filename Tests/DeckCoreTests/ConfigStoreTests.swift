@@ -51,4 +51,15 @@ final class ConfigStoreTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: source) }
         XCTAssertNotEqual(try store.importImage(from: source), try store.importImage(from: source))
     }
+
+    func testLaunchStoreUsesTheStandardFolderByDefault() {
+        let defaults = UserDefaults(suiteName: "deckcore-\(UUID().uuidString)")!
+        XCTAssertEqual(ConfigStore.forLaunch(defaults: defaults).folder, ConfigStore.standard.folder)
+    }
+
+    func testLaunchStoreFollowsTheConfigFolderSetting() {
+        let defaults = UserDefaults(suiteName: "deckcore-\(UUID().uuidString)")!
+        defaults.set("/tmp/une-autre-config", forKey: "configFolder")
+        XCTAssertEqual(ConfigStore.forLaunch(defaults: defaults).folder.path, "/tmp/une-autre-config")
+    }
 }

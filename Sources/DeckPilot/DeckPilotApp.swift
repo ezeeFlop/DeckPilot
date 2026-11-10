@@ -83,7 +83,7 @@ private struct MenuContent: View {
                 do {
                     if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
                 } catch {
-                    controller.message = "Réglage non appliqué : \(error.localizedDescription)"
+                    controller.message = String(localized: "Réglage non appliqué : \(error.localizedDescription)")
                     launchesAtLogin = SMAppService.mainApp.status == .enabled
                 }
             }

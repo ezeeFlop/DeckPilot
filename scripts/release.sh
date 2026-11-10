@@ -33,6 +33,9 @@ APP="build/DeckPilot.app"
 DMG="build/DeckPilot-${VERSION}.dmg"
 STAGING="build/dmg-staging"
 
+echo "==> Contrôle des traductions"
+scripts/check-localizations.sh
+
 echo "==> Construction et signature (Developer ID, runtime renforcé)"
 DECKPILOT_SIGN_IDENTITY="$IDENTITY" DECKPILOT_HARDENED=1 scripts/build-app.sh --universal
 codesign --verify --strict --verbose=2 "$APP"

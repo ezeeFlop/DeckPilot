@@ -46,8 +46,8 @@ struct MainView: View {
     }
 
     private var hint: String {
-        if !controller.isConnected { return "Branche le boîtier : tes réglages y apparaîtront aussitôt." }
-        return "Dépose une application, un fichier ou une image sur une touche. Fais glisser une touche pour la déplacer."
+        if !controller.isConnected { return String(localized: "Branche le boîtier : tes réglages y apparaîtront aussitôt.") }
+        return String(localized: "Dépose une application, un fichier ou une image sur une touche. Fais glisser une touche pour la déplacer.")
     }
 }
 
@@ -94,7 +94,7 @@ private struct Sidebar: View {
                                     .onSubmit { renaming = nil }
                                     .onChange(of: nameFieldFocused) { _, focused in if !focused { renaming = nil } }
                             } else {
-                                Text(page.name.isEmpty ? "Sans nom" : page.name)
+                                Text(page.name.isEmpty ? String(localized: "Sans nom") : page.name)
                             }
                         }
                         .tag(page.id)
