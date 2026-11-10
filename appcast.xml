@@ -3,6 +3,23 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.6.0</title>
+            <pubDate>Tue, 10 Nov 2026 13:52:06 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.6.0</sparkle:version>
+            <sparkle:shortVersionString>0.6.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Several actions in a row
+
+A key can now run a list of actions in order. Under **Action**, choose **Several actions in
+a row**, add the steps, reorder them with the arrows, and set the pause between them. If a
+step fails, the rest is not run.
+
+The action a key already had becomes the first step, so nothing is lost when you switch.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.6.0/DeckPilot-0.6.0.dmg" length="6071604" type="application/octet-stream" sparkle:edSignature="K/IQSuJOWHY9xE2sZXwhfaA3h3fYk5xAhqyHnon/MK42TcPVjxyOjHbZaByw7IwogWM61pIltgtp92cdKqScAA=="/>
+        </item>
+        <item>
             <title>0.5.0</title>
             <pubDate>Tue, 10 Nov 2026 13:33:26 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
@@ -43,28 +60,6 @@ comes to the front, the deck shows that page; when you leave, it returns to the 
 was on.
 ]]></description>
             <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.4.0/DeckPilot-0.4.0.dmg" length="5733611" type="application/octet-stream" sparkle:edSignature="gryrfNZlx20EiPdW/d7kTvQSOIM2EkGjnQ3WY0I/9UHQ3LyZGCElVInsYa/Aqb3UifapQxVRd0KSgrfepehYCw=="/>
-        </item>
-        <item>
-            <title>0.3.0</title>
-            <pubDate>Tue, 10 Nov 2026 13:07:48 +0100</pubDate>
-            <link>https://github.com/ezeeFlop/DeckPilot</link>
-            <sparkle:version>0.3.0</sparkle:version>
-            <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[## Two-state keys
-
-A key can now have a second look and a second action. Under **Second state** in a key's
-settings, choose what switches it:
-
-- every press, for a plain toggle;
-- the Mac's sound being muted;
-- an application being open;
-- a command succeeding (checked every 5 seconds).
-
-Then pick **State 2** at the top of the panel and set its title, icon, background and
-action with the same controls as the first state.
-]]></description>
-            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.3.0/DeckPilot-0.3.0.dmg" length="5670736" type="application/octet-stream" sparkle:edSignature="Np6fnskwlnWMOlBQPkCsnUu7tiIZy9XcxCAfqNHmYo5is/SQ889rwIaQhbTa7+hEda68koYvh16R4Ao+9GalBA=="/>
         </item>
     </channel>
 </rss>
