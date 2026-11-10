@@ -12,6 +12,17 @@ final class LiveValueTests: XCTestCase {
         XCTAssertEqual(LiveValue(text: "-7,5 °C").number, -7.5)
     }
 
+    func testReadsDecimalsWrittenWithoutALeadingZero() {
+        // « bc » écrit .2 pour 0,2 : sans cette lecture, la valeur affichée serait 2.
+        XCTAssertEqual(LiveValue(text: ".2").number, 0.2)
+        XCTAssertEqual(LiveValue(text: "-.5").number, -0.5)
+        XCTAssertEqual(LiveValue(text: "débit : ,75 Mb/s").number, 0.75)
+    }
+
+    func testAFullStopEndingASentenceIsNotADecimalPoint() {
+        XCTAssertEqual(LiveValue(text: "Fin. 12 erreurs").number, 12)
+    }
+
     func testKeepsTheFirstLineAsText() {
         let value = LiveValue(text: "  en ligne \nligne 2")
         XCTAssertEqual(value.text, "en ligne")

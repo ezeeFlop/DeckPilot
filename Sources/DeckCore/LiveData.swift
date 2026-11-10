@@ -95,7 +95,8 @@ public struct LiveValue: Equatable, Sendable {
     public init(text raw: String) {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         text = trimmed.split(whereSeparator: \.isNewline).first.map { $0.trimmingCharacters(in: .whitespaces) } ?? ""
-        if let range = text.range(of: #"-?\d+(?:[.,]\d+)?"#, options: .regularExpression) {
+        // Un nombre peut s'écrire sans zéro devant la virgule (« .2 »), comme le fait « bc ».
+        if let range = text.range(of: #"-?(?:\d+(?:[.,]\d+)?|[.,]\d+)"#, options: .regularExpression) {
             number = Double(text[range].replacingOccurrences(of: ",", with: "."))
         } else {
             number = nil
