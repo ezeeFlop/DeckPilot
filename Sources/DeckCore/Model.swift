@@ -86,12 +86,14 @@ public struct KeyConfig: Codable, Hashable, Sendable {
     public var animation: KeyAnimation
     public var widget: KeyWidget
     public var action: KeyAction
+    /// Donnée vivante affichée à la place de l'icône ; `nil` pour une case ordinaire.
+    public var live: LiveData?
 
     public init(title: String = "", titleColor: DeckColor = .white, titleSize: Double = 15,
                 titlePosition: TitlePosition = .bottom, background: DeckColor = .black,
                 backgroundEnd: DeckColor? = nil, icon: KeyIcon = .none, iconColor: DeckColor = .white,
                 iconScale: Double = 0.55, animation: KeyAnimation = .none, widget: KeyWidget = .none,
-                action: KeyAction = .none) {
+                action: KeyAction = .none, live: LiveData? = nil) {
         self.title = title
         self.titleColor = titleColor
         self.titleSize = titleSize
@@ -104,6 +106,7 @@ public struct KeyConfig: Codable, Hashable, Sendable {
         self.animation = animation
         self.widget = widget
         self.action = action
+        self.live = live
     }
 
     /// Vrai pour une case que l'utilisateur n'a pas touchée.

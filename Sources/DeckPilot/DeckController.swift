@@ -26,6 +26,8 @@ final class DeckController: ObservableObject {
     /// Horloge des animations, partagée entre l'écran du Mac et le boîtier. Elle est tenue à part
     /// pour que seules les cases animées se redessinent à chaque image, pas toute la fenêtre.
     let animation = AnimationClock()
+    let live = LiveDataEngine()
+    private var wasAnimating = false
     private var time: TimeInterval { animation.time }
     private var clock: TimeInterval = 0
     @Published private(set) var now = Date()
@@ -258,7 +260,11 @@ final class DeckController: ObservableObject {
 
     private func tick() {
         clock = Date().timeIntervalSince(start)
-        if currentPage.keys.values.contains(where: isAnimated) { animation.time = clock }
+        live.update(page: currentPage, clock: clock)
+        // Un battement de plus après la fin d'une animation, pour que la dernière image montre la valeur d'arrivée.
+        let animating = currentPage.keys.values.contains(where: isAnimated) || live.hasRunningTransition(clock: clock)
+        if animating || wasAnimating { animation.time = clock }
+        wasAnimating = animating
         let held = presses.held(at: clock)
         if held != pressedSlots { pressedSlots = held }
         let date = Date()
@@ -288,6 +294,13 @@ final class DeckController: ObservableObject {
         if changed { deck.send(.refresh) }
     }
 
+    /// Ce que la donnée vivante d'une case doit montrer maintenant ; `nil` pour une case ordinaire.
+    func liveDisplay(slot: Int, key: KeyConfig) -> LiveDisplay? {
+        guard let settings = key.live, settings.source != .none else { return nil }
+        return live.display(for: .init(page: currentPage.id, slot: slot), clock: time)
+            ?? LiveDisplay(text: "…", fraction: 0, level: .normal, history: [], style: settings.style, isPlaceholder: true)
+    }
+
     func isAnimated(_ key: KeyConfig) -> Bool {
         guard key.widget == .none, key.icon != .none else { return false }
         return key.animation != .none || icons.frames(for: key.icon)?.isAnimated == true
@@ -298,6 +311,10 @@ final class DeckController: ObservableObject {
         var hasher = Hasher()
         hasher.combine(key)
         hasher.combine(pressedSlots.contains(slot))
+        if let display = liveDisplay(slot: slot, key: key) {
+            hasher.combine(display)
+            return hasher.finalize()
+        }
         if key.widget != .none { hasher.combine(now) }
         if key.widget == .none {
             if key.animation != .none, key.icon != .none { hasher.combine(Int(time * Self.framesPerSecond)) }
@@ -310,7 +327,8 @@ final class DeckController: ObservableObject {
         let side = CGFloat(layout.imageSide)
         let view = KeyFaceView(config: key, side: side, iconImage: icons.image(for: key.icon, at: time), time: time,
                                now: now, pressed: pressedSlots.contains(slot),
-                               leadingInset: CGFloat(layout.contentLeadingInset(ofSlot: slot)) / side)
+                               leadingInset: CGFloat(layout.contentLeadingInset(ofSlot: slot)) / side,
+                               live: liveDisplay(slot: slot, key: key))
         // Un seul moteur de rendu, réutilisé : en créer un par image coûte cher en mémoire et en temps.
         if let renderer {
             renderer.content = view

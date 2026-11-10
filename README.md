@@ -17,6 +17,8 @@ right; what you see in the window is what the deck displays.
 
 ![A "Studio" layout, with the Record key selected and its blink animation chosen](docs/images/studio.png)
 
+![A "Monitor" layout: processor, memory, disk and battery gauges, a load sparkline, a value read from a web API](docs/images/monitor.png)
+
 ## What it does
 
 - **Keys you configure by looking at them.** The window shows the deck as it sits on your
@@ -29,7 +31,10 @@ right; what you see in the window is what the deck displays.
   GIF, or an app's own icon), plain or gradient background.
 - **Animations.** Pulse, spin, bounce and blink on any icon, and animated GIFs. They are
   played from the Mac, frame by frame.
-- **Live content.** A clock and a date, handy on the three display-only cells of the strip.
+- **Live data.** A key can show a number that updates on its own: a Mac measurement
+  (processor, memory, disk, battery), a field read from a JSON API, or the output of a shell
+  command. Draw it as a plain value, a ring, a bar or a sparkline, with orange and red
+  thresholds; the gauge glides from one reading to the next. A clock and a date are built in.
 - **Pages.** As many pages of keys as you want, switchable from a key or from the menu bar.
 - **French and English.** The interface follows your system language.
 - **Stays out of the way.** It lives in the menu bar, reconnects when the deck is plugged
@@ -88,6 +93,17 @@ feed address and public key in `scripts/build-app.sh`.
 
 Your settings live in `~/Library/Application Support/DeckPilot/config.json`, with images
 in the `images` folder next to it.
+
+## Live data sources
+
+- **Mac measurement**: nothing to set up.
+- **Web**: an address and the path of the field to read, such as `data.items[0].value`.
+  Leave the path empty to read the whole response. Extra request headers go one per line
+  (`Authorization: Bearer …`); they are stored as plain text in the settings file.
+- **Command**: anything `zsh` can run. The first line it prints is shown, and the first
+  number in it drives the gauge. A command that has not finished after ten seconds is stopped.
+
+Only the keys of the page on display are refreshed.
 
 ## The protocol, in short
 

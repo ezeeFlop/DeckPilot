@@ -135,18 +135,32 @@ struct SlotFace: View {
 
     var body: some View {
         let key = controller.key(at: slot)
-        if controller.isAnimated(key) {
+        if let settings = key.live, settings.source != .none {
+            LiveFace(engine: controller.live, clock: controller.animation) {
+                face(key, time: 0, live: controller.liveDisplay(slot: slot, key: key))
+            }
+        } else if controller.isAnimated(key) {
             AnimatedFace(clock: controller.animation) { time in face(key, time: time) }
         } else {
             face(key, time: 0)
         }
     }
 
-    private func face(_ key: KeyConfig, time: TimeInterval) -> KeyFaceView {
+    private func face(_ key: KeyConfig, time: TimeInterval, live: LiveDisplay? = nil) -> KeyFaceView {
         KeyFaceView(config: key, side: side, iconImage: controller.icons.image(for: key.icon, at: time),
                     time: time, now: controller.now, pressed: controller.pressedSlots.contains(slot),
-                    leadingInset: CGFloat(controller.layout.contentLeadingInset(ofSlot: slot)) / CGFloat(controller.layout.imageSide))
+                    leadingInset: CGFloat(controller.layout.contentLeadingInset(ofSlot: slot)) / CGFloat(controller.layout.imageSide),
+                    live: live)
     }
+}
+
+/// Une case vivante se redessine quand une lecture aboutit et pendant le glissement d'une valeur à l'autre.
+private struct LiveFace: View {
+    @ObservedObject var engine: LiveDataEngine
+    @ObservedObject var clock: AnimationClock
+    let content: () -> KeyFaceView
+
+    var body: some View { content() }
 }
 
 private struct AnimatedFace: View {

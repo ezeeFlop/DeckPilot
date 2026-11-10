@@ -23,6 +23,8 @@ struct KeyFaceView: View {
     var pressed = false
     /// Marge gauche inutilisable (cases de la bande d'affichage), en proportion du côté.
     var leadingInset: CGFloat = 0
+    /// Valeur à montrer quand la case porte une donnée vivante.
+    var live: LiveDisplay?
 
     private var unit: CGFloat { side / 96 }
     private var hasTitle: Bool { !config.title.isEmpty }
@@ -48,6 +50,15 @@ struct KeyFaceView: View {
     }
 
     @ViewBuilder private var content: some View {
+        if let live {
+            LiveContent(display: live, title: config.title, titleSize: config.titleSize, titleColor: config.titleColor.color,
+                        accent: config.iconColor.color, unit: unit)
+        } else {
+            staticContent
+        }
+    }
+
+    @ViewBuilder private var staticContent: some View {
         switch config.widget {
         case .clock: clock
         case .date: date
@@ -167,6 +178,140 @@ private struct IconMotion: ViewModifier {
             content.offset(y: -abs(sin(.pi * phase(0.9))) * side * 0.12)
         case .blink:
             content.opacity(phase(1.2) < 0.5 ? 1 : 0.2)
+        }
+    }
+}
+
+/// Le dessin d'une donnée vivante : valeur seule, anneau, barre ou courbe.
+private struct LiveContent: View {
+    let display: LiveDisplay
+    let title: String
+    let titleSize: Double
+    let titleColor: Color
+    let accent: Color
+    let unit: CGFloat
+
+    private var color: Color {
+        switch display.level {
+        case .normal: return accent
+        case .warning: return Color(red: 0.96, green: 0.62, blue: 0.04)
+        case .critical: return Color(red: 0.94, green: 0.27, blue: 0.27)
+        }
+    }
+
+    private var valueColor: Color { display.level == .normal ? titleColor : color }
+
+    var body: some View {
+        switch display.style {
+        case .value: valueOnly
+        case .ring: ring
+        case .bar: bar
+        case .sparkline: sparkline
+        }
+    }
+
+    private func value(_ size: CGFloat) -> some View {
+        Text(display.text)
+            .font(.system(size: size * unit, weight: .bold, design: .rounded))
+            .monospacedDigit()
+            .foregroundStyle(valueColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.4)
+            .opacity(display.isPlaceholder ? 0.5 : 1)
+    }
+
+    @ViewBuilder private var label: some View {
+        if !title.isEmpty {
+            Text(title)
+                .font(.system(size: min(titleSize, 15) * unit, weight: .semibold, design: .rounded))
+                .foregroundStyle(titleColor.opacity(0.8))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        }
+    }
+
+    private var valueOnly: some View {
+        VStack(spacing: 2 * unit) {
+            value(30)
+            label
+        }
+        .padding(.horizontal, 6 * unit)
+    }
+
+    private var ring: some View {
+        let width = 9 * unit
+        return VStack(spacing: 1 * unit) {
+            ZStack {
+                Circle()
+                    .trim(from: 0, to: 0.75)
+                    .stroke(Color.white.opacity(0.16), style: StrokeStyle(lineWidth: width, lineCap: .round))
+                    .rotationEffect(.degrees(135))
+                Circle()
+                    .trim(from: 0, to: 0.75 * max(display.fraction, 0.001))
+                    .stroke(color, style: StrokeStyle(lineWidth: width, lineCap: .round))
+                    .rotationEffect(.degrees(135))
+                value(19)
+                    .padding(.horizontal, width + 5 * unit)
+            }
+            .padding(width / 2)
+            .aspectRatio(1, contentMode: .fit)
+            label
+                .padding(.top, -9 * unit)
+        }
+        .padding(.horizontal, 8 * unit)
+        .padding(.vertical, 7 * unit)
+    }
+
+    private var bar: some View {
+        VStack(spacing: 5 * unit) {
+            label
+            value(26)
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.16))
+                    Capsule().fill(color).frame(width: max(proxy.size.width * display.fraction, proxy.size.height))
+                }
+            }
+            .frame(height: 9 * unit)
+        }
+        .padding(.horizontal, 10 * unit)
+    }
+
+    private var sparkline: some View {
+        VStack(alignment: .leading, spacing: 2 * unit) {
+            HStack(alignment: .firstTextBaseline, spacing: 4 * unit) {
+                value(20)
+                label
+            }
+            GeometryReader { proxy in
+                let points = Self.points(display.history, in: proxy.size)
+                if points.count > 1 {
+                    Path { path in
+                        path.move(to: CGPoint(x: points[0].x, y: proxy.size.height))
+                        points.forEach { path.addLine(to: $0) }
+                        path.addLine(to: CGPoint(x: points[points.count - 1].x, y: proxy.size.height))
+                        path.closeSubpath()
+                    }
+                    .fill(LinearGradient(colors: [color.opacity(0.45), color.opacity(0.02)], startPoint: .top, endPoint: .bottom))
+                    Path { path in
+                        path.move(to: points[0])
+                        points.dropFirst().forEach { path.addLine(to: $0) }
+                    }
+                    .stroke(color, style: StrokeStyle(lineWidth: 2.5 * unit, lineCap: .round, lineJoin: .round))
+                }
+            }
+        }
+        .padding(.horizontal, 8 * unit)
+        .padding(.vertical, 9 * unit)
+    }
+
+    /// Place les valeurs de gauche à droite, la plus basse en bas et la plus haute en haut de la zone.
+    private static func points(_ values: [Double], in size: CGSize) -> [CGPoint] {
+        guard values.count > 1, let low = values.min(), let high = values.max() else { return [] }
+        let span = max(high - low, 0.0001)
+        return values.enumerated().map { index, value in
+            CGPoint(x: size.width * CGFloat(index) / CGFloat(values.count - 1),
+                    y: size.height * (1 - CGFloat((value - low) / span) * 0.9 - 0.05))
         }
     }
 }

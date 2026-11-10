@@ -61,18 +61,25 @@ private struct KeyEditor: View {
                 .pickerStyle(.segmented)
             }
 
-            Section("Icône") {
-                IconEditor(key: $key)
-                if key.icon != .none {
-                    LabeledContent("Taille") { Slider(value: $key.iconScale, in: 0.2...1) }
-                    Picker("Animation", selection: Binding(get: { key.animation }, set: { key.animation = $0 })) {
-                        Text("Aucune").tag(KeyAnimation.none)
-                        Text("Pulsation").tag(KeyAnimation.pulse)
-                        Text("Rotation").tag(KeyAnimation.spin)
-                        Text("Rebond").tag(KeyAnimation.bounce)
-                        Text("Clignotement").tag(KeyAnimation.blink)
+            // Une case qui montre une donnée, l'heure ou la date n'affiche pas d'icône : sa section est masquée.
+            if !showsLiveContent {
+                Section("Icône") {
+                    IconEditor(key: $key)
+                    if key.icon != .none {
+                        LabeledContent("Taille") { Slider(value: $key.iconScale, in: 0.2...1) }
+                        Picker("Animation", selection: Binding(get: { key.animation }, set: { key.animation = $0 })) {
+                            Text("Aucune").tag(KeyAnimation.none)
+                            Text("Pulsation").tag(KeyAnimation.pulse)
+                            Text("Rotation").tag(KeyAnimation.spin)
+                            Text("Rebond").tag(KeyAnimation.bounce)
+                            Text("Clignotement").tag(KeyAnimation.blink)
+                        }
                     }
                 }
+            }
+
+            Section("Contenu vivant") {
+                LiveEditor(key: $key, slot: slot)
             }
 
             Section("Fond") {
@@ -90,14 +97,6 @@ private struct KeyEditor: View {
                 }
             }
 
-            Section("Contenu vivant") {
-                Picker("Afficher", selection: $key.widget) {
-                    Text("Rien de particulier").tag(KeyWidget.none)
-                    Text("L'heure").tag(KeyWidget.clock)
-                    Text("La date").tag(KeyWidget.date)
-                }
-            }
-
             if pressable {
                 Section("Action") {
                     ActionEditor(action: $key.action)
@@ -112,6 +111,10 @@ private struct KeyEditor: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private var showsLiveContent: Bool {
+        key.widget != .none || (key.live.map { $0.source != .none } ?? false)
     }
 
     private func color(_ path: WritableKeyPath<KeyConfig, DeckColor>) -> Binding<Color> {
@@ -278,6 +281,181 @@ private struct SymbolPicker: View {
         }
         .padding(12)
         .frame(width: 350)
+    }
+}
+
+// MARK: Contenu vivant
+
+private enum LiveKind: String, CaseIterable, Identifiable {
+    case none, clock, date, system, http, command
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .none: return String(localized: "Rien de particulier")
+        case .clock: return String(localized: "L'heure")
+        case .date: return String(localized: "La date")
+        case .system: return String(localized: "Une mesure du Mac")
+        case .http: return String(localized: "Une donnée lue sur le web")
+        case .command: return String(localized: "Le résultat d'une commande")
+        }
+    }
+
+    init(_ key: KeyConfig) {
+        switch key.live?.source {
+        case .system: self = .system
+        case .http: self = .http
+        case .command: self = .command
+        case .some(.none), nil:
+            switch key.widget {
+            case .clock: self = .clock
+            case .date: self = .date
+            case .none: self = .none
+            }
+        }
+    }
+}
+
+private struct LiveEditor: View {
+    @EnvironmentObject private var controller: DeckController
+    @Binding var key: KeyConfig
+    let slot: Int
+
+    private var live: Binding<LiveData> {
+        Binding(get: { key.live ?? LiveData() }, set: { key.live = $0 })
+    }
+
+    var body: some View {
+        Picker("Afficher", selection: Binding(get: { LiveKind(key) }, set: { change(to: $0) })) {
+            ForEach(LiveKind.allCases) { Text($0.label).tag($0) }
+        }
+        if let settings = key.live, settings.source != .none {
+            source(settings.source)
+            Picker("Rythme", selection: live.interval) {
+                Text("Toutes les 2 s").tag(2.0)
+                Text("Toutes les 5 s").tag(5.0)
+                Text("Toutes les 15 s").tag(15.0)
+                Text("Toutes les 30 s").tag(30.0)
+                Text("Chaque minute").tag(60.0)
+                Text("Toutes les 5 min").tag(300.0)
+                Text("Toutes les 15 min").tag(900.0)
+            }
+            Picker("Forme", selection: live.style) {
+                Text("Valeur").tag(LiveStyle.value)
+                Text("Anneau").tag(LiveStyle.ring)
+                Text("Barre").tag(LiveStyle.bar)
+                Text("Courbe").tag(LiveStyle.sparkline)
+            }
+            if settings.style == .ring || settings.style == .bar {
+                LabeledContent("De") {
+                    HStack {
+                        TextField("", value: live.minimum, format: .number).frame(width: 70)
+                        Text("à")
+                        TextField("", value: live.maximum, format: .number).frame(width: 70)
+                    }
+                }
+            }
+            TextField("Unité", text: live.unit, prompt: Text("%"))
+            Stepper("Décimales : \(settings.decimals)", value: live.decimals, in: 0...3)
+            ColorPicker("Couleur", selection: Binding(get: { key.iconColor.color }, set: { key.iconColor = DeckColor($0) }),
+                        supportsOpacity: false)
+            LabeledContent("Orange à partir de") {
+                TextField("", value: live.warning, format: .number, prompt: Text("aucun")).frame(width: 90)
+            }
+            LabeledContent("Rouge à partir de") {
+                TextField("", value: live.critical, format: .number, prompt: Text("aucun")).frame(width: 90)
+            }
+            Toggle("Alerter quand la valeur est basse", isOn: live.alertsWhenBelow)
+            LiveStatus(engine: controller.live, key: .init(page: controller.currentPage.id, slot: slot))
+        }
+    }
+
+    @ViewBuilder private func source(_ source: LiveSource) -> some View {
+        switch source {
+        case .none:
+            EmptyView()
+        case .system(let metric):
+            Picker("Mesure", selection: Binding(get: { metric }, set: { apply(preset: $0) })) {
+                Text("Processeur").tag(SystemMetric.cpu)
+                Text("Mémoire").tag(SystemMetric.memory)
+                Text("Disque").tag(SystemMetric.disk)
+                Text("Batterie").tag(SystemMetric.battery)
+            }
+        case .http(let url, let path, let headers):
+            TextField("Adresse", text: Binding(get: { url }, set: { live.wrappedValue.source = .http(url: $0, jsonPath: path, headers: headers) }),
+                      prompt: Text("api.exemple.fr/etat"))
+            TextField("Champ JSON", text: Binding(get: { path }, set: { live.wrappedValue.source = .http(url: url, jsonPath: $0, headers: headers) }),
+                      prompt: Text("data.items[0].valeur"))
+                .font(.system(.body, design: .monospaced))
+            TextField("En-têtes", text: Binding(get: { headers }, set: { live.wrappedValue.source = .http(url: url, jsonPath: path, headers: $0) }),
+                      prompt: Text("Authorization: Bearer …"), axis: .vertical)
+                .lineLimit(1...3)
+                .font(.system(.body, design: .monospaced))
+                .help("Un en-tête par ligne. Ils sont enregistrés en clair dans le fichier de réglages.")
+        case .command(let command):
+            TextField("Commande", text: Binding(get: { command }, set: { live.wrappedValue.source = .command($0) }),
+                      prompt: Text("date +%S"), axis: .vertical)
+                .lineLimit(1...4)
+                .font(.system(.body, design: .monospaced))
+        }
+    }
+
+    private func change(to kind: LiveKind) {
+        guard kind != LiveKind(key) else { return }
+        switch kind {
+        case .none:
+            key.widget = .none
+            key.live = nil
+        case .clock, .date:
+            key.widget = kind == .clock ? .clock : .date
+            key.live = nil
+        case .system:
+            key.widget = .none
+            apply(preset: .cpu)
+        case .http:
+            key.widget = .none
+            key.live = LiveData(source: .http(url: "", jsonPath: "", headers: ""), interval: 60)
+        case .command:
+            key.widget = .none
+            key.live = LiveData(source: .command(""), interval: 30)
+        }
+    }
+
+    /// Réglages de départ adaptés à chaque mesure du Mac ; le titre suit tant qu'il n'a pas été personnalisé.
+    private func apply(preset metric: SystemMetric) {
+        let titles: [SystemMetric: String] = [
+            .cpu: String(localized: "CPU"), .memory: String(localized: "Mémoire"),
+            .disk: String(localized: "Disque"), .battery: String(localized: "Batterie"),
+        ]
+        if key.title.isEmpty || titles.values.contains(key.title) { key.title = titles[metric] ?? "" }
+        switch metric {
+        case .cpu:
+            key.live = LiveData(source: .system(.cpu), interval: 2, style: .ring, unit: "%", warning: 75, critical: 90)
+        case .memory:
+            key.live = LiveData(source: .system(.memory), interval: 5, style: .ring, unit: "%", warning: 80, critical: 92)
+        case .disk:
+            key.live = LiveData(source: .system(.disk), interval: 60, style: .bar, unit: "%", warning: 85, critical: 95)
+        case .battery:
+            key.live = LiveData(source: .system(.battery), interval: 60, style: .ring, unit: "%", warning: 30, critical: 15,
+                                alertsWhenBelow: true)
+        }
+    }
+}
+
+/// Dernière valeur lue ou dernière erreur, pour savoir si la source répond.
+private struct LiveStatus: View {
+    @ObservedObject var engine: LiveDataEngine
+    let key: LiveDataEngine.Key
+
+    var body: some View {
+        if let status = engine.status(for: key) {
+            LabeledContent(status.isError ? "Dernière erreur" : "Dernière lecture") {
+                Text(status.text)
+                    .foregroundStyle(status.isError ? Color.red : Color.secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.trailing)
+            }
+        }
     }
 }
 
