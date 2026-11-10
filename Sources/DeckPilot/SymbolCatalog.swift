@@ -1,0 +1,30 @@
+/// Symboles proposés d'emblée dans le sélecteur ; tout autre nom SF Symbols peut être saisi à la main.
+enum SymbolCatalog {
+    static let names: [String] = [
+        "star.fill", "heart.fill", "bolt.fill", "flame.fill", "house.fill", "gearshape.fill", "bell.fill", "bookmark.fill",
+        "tag.fill", "flag.fill", "pin.fill", "lock.fill", "lock.open.fill", "key.fill", "trash.fill", "folder.fill",
+        "doc.fill", "doc.text.fill", "doc.on.clipboard.fill", "tray.full.fill", "archivebox.fill", "paperclip", "link",
+        "square.and.arrow.up.fill", "square.and.arrow.down.fill", "pencil", "scissors", "paintbrush.fill", "eyedropper",
+        "magnifyingglass", "plus", "minus", "xmark", "checkmark", "arrow.left", "arrow.right", "arrow.up", "arrow.down",
+        "arrow.clockwise", "arrow.counterclockwise", "arrow.uturn.backward", "arrow.triangle.2.circlepath",
+        "chevron.left", "chevron.right", "play.fill", "pause.fill", "stop.fill", "playpause.fill", "backward.fill",
+        "forward.fill", "backward.end.fill", "forward.end.fill", "record.circle.fill", "shuffle", "repeat",
+        "speaker.fill", "speaker.slash.fill", "speaker.wave.2.fill", "speaker.wave.3.fill", "speaker.minus.fill",
+        "speaker.plus.fill", "music.note", "music.mic", "headphones", "mic.fill", "mic.slash.fill", "video.fill",
+        "video.slash.fill", "camera.fill", "photo.fill", "film.fill", "tv.fill", "display", "desktopcomputer",
+        "laptopcomputer", "keyboard.fill", "printer.fill", "externaldrive.fill", "server.rack", "cpu.fill",
+        "memorychip.fill", "wifi", "antenna.radiowaves.left.and.right", "network", "globe", "cloud.fill",
+        "icloud.and.arrow.up.fill", "icloud.and.arrow.down.fill", "envelope.fill", "paperplane.fill", "message.fill",
+        "bubble.left.and.bubble.right.fill", "phone.fill", "phone.down.fill", "person.fill", "person.2.fill",
+        "person.crop.circle.fill", "calendar", "clock.fill", "timer", "stopwatch.fill", "alarm.fill", "hourglass",
+        "sun.max.fill", "moon.fill", "sparkles", "cloud.rain.fill", "snowflake", "thermometer.medium", "drop.fill",
+        "leaf.fill", "lightbulb.fill", "power", "battery.100", "terminal.fill", "chevron.left.forwardslash.chevron.right",
+        "curlybraces", "hammer.fill", "wrench.and.screwdriver.fill", "ladybug.fill", "shippingbox.fill", "cart.fill",
+        "creditcard.fill", "eurosign.circle.fill", "chart.bar.fill", "chart.line.uptrend.xyaxis", "chart.pie.fill",
+        "list.bullet", "square.grid.2x2.fill", "rectangle.split.2x1.fill", "macwindow", "rectangle.on.rectangle",
+        "eye.fill", "eye.slash.fill", "hand.thumbsup.fill", "hand.raised.fill", "face.smiling.fill", "gamecontroller.fill",
+        "map.fill", "location.fill", "airplane", "car.fill", "bicycle", "cup.and.saucer.fill", "fork.knife",
+        "book.fill", "graduationcap.fill", "briefcase.fill", "building.2.fill", "cross.case.fill", "info.circle.fill",
+        "questionmark.circle.fill", "exclamationmark.triangle.fill", "nosign", "moon.zzz.fill", "rectangle.portrait.and.arrow.right.fill",
+    ]
+}
