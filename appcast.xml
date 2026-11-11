@@ -3,6 +3,25 @@
     <channel>
         <title>DeckPilot</title>
         <item>
+            <title>0.6.2</title>
+            <pubDate>Wed, 11 Nov 2026 09:28:40 +0100</pubDate>
+            <link>https://github.com/ezeeFlop/DeckPilot</link>
+            <sparkle:version>0.6.2</sparkle:version>
+            <sparkle:shortVersionString>0.6.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[## Fixes
+
+- The deck stopped refreshing after a few hours when a key was left selected in the settings
+  window, most visibly on pages with plugin keys. On macOS 26, a segmented picker loses a
+  little memory every time it is redrawn; the settings panel was redrawn on every plugin
+  update, so the window's layout grew slower and slower until it took all of the app's time.
+  The two segmented pickers of the panel are now redrawn only when their choice changes.
+- Copying a plugin key and pasting it on the same page closed the app. The pasted key now
+  gets its own identity for the plugin, and keeps the settings of the original.
+]]></description>
+            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.6.2/DeckPilot-0.6.2.dmg" length="6081212" type="application/octet-stream" sparkle:edSignature="+UTL2VpoFJpyAHRz9jmbWsBFZryu6EL4J2g6T4K3MGm8dDukpIvm6c49JTpcHfORas5XsXCNkn4Uo9LhHybcCg=="/>
+        </item>
+        <item>
             <title>0.6.1</title>
             <pubDate>Tue, 10 Nov 2026 14:06:57 +0100</pubDate>
             <link>https://github.com/ezeeFlop/DeckPilot</link>
@@ -33,27 +52,6 @@ step fails, the rest is not run.
 The action a key already had becomes the first step, so nothing is lost when you switch.
 ]]></description>
             <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.6.0/DeckPilot-0.6.0.dmg" length="6071604" type="application/octet-stream" sparkle:edSignature="K/IQSuJOWHY9xE2sZXwhfaA3h3fYk5xAhqyHnon/MK42TcPVjxyOjHbZaByw7IwogWM61pIltgtp92cdKqScAA=="/>
-        </item>
-        <item>
-            <title>0.5.0</title>
-            <pubDate>Tue, 10 Nov 2026 13:33:26 +0100</pubDate>
-            <link>https://github.com/ezeeFlop/DeckPilot</link>
-            <sparkle:version>0.5.0</sparkle:version>
-            <sparkle:shortVersionString>0.5.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[## Stream Deck plugins
-
-DeckPilot can now host plugins written for Elgato's Stream Deck with the official Node.js
-kit. A plugin draws its keys, receives their presses and shows its own settings page in the
-panel.
-
-Select a key, then under **Plugin** use **Install a plugin…** with a `.sdPlugin` folder or a
-`.streamDeckPlugin` file, and hand the key to one of the plugin's actions.
-
-Node.js must be installed on the Mac. Plugins written as an HTML page, dials, touch strips
-and profile switching are not supported. This first version has been tried with one plugin.
-]]></description>
-            <enclosure url="https://github.com/ezeeFlop/DeckPilot/releases/download/v0.5.0/DeckPilot-0.5.0.dmg" length="6026260" type="application/octet-stream" sparkle:edSignature="wyzLLvDUi+6FVtMo/0fkzXxWK4pODCjXpK5UsWYc4WzpAJ6fF+R5TryzejLnnl7u9h6zjacD5mOMzZuG0iCdAw=="/>
         </item>
     </channel>
 </rss>
