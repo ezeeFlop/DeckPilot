@@ -59,11 +59,11 @@ private struct KeyEditor: View {
                     }
                 }
                 if key.alternate != nil {
-                    Picker("État réglé", selection: $editsSecondState) {
+                    SegmentedChoice("État réglé", selection: $editsSecondState) {
                         Text("État 1").tag(false)
                         Text("État 2").tag(true)
                     }
-                    .pickerStyle(.segmented)
+                    .equatable()
                     .labelsHidden()
                 }
             }
@@ -79,12 +79,14 @@ private struct KeyEditor: View {
                 TextField("Texte", text: face.title, prompt: Text("Aucun"))
                 ColorPicker("Couleur", selection: color(face, \.titleColor), supportsOpacity: false)
                 LabeledContent("Taille") { Slider(value: face.titleSize, in: 9...30) }
-                Picker("Position", selection: face.titlePosition) {
+                SegmentedChoice("Position", selection: face.titlePosition) {
                     Text("Haut").tag(TitlePosition.top)
                     Text("Milieu").tag(TitlePosition.middle)
                     Text("Bas").tag(TitlePosition.bottom)
                 }
-                .pickerStyle(.segmented)
+                .equatable()
+                // Le choix écrit dans l'état en cours de réglage : on repart d'un sélecteur neuf quand on change d'état.
+                .id(showsSecondState)
             }
 
             // Une case qui montre une donnée, l'heure ou la date n'affiche pas d'icône : sa section est masquée.
@@ -168,6 +170,38 @@ private struct KeyEditor: View {
 
     private func color(_ face: Binding<KeyConfig>, _ path: WritableKeyPath<KeyConfig, DeckColor>) -> Binding<Color> {
         Binding(get: { face.wrappedValue[keyPath: path].color }, set: { face.wrappedValue[keyPath: path] = DeckColor($0) })
+    }
+}
+
+// MARK: Sélecteur segmenté
+
+/// Un sélecteur segmenté qui n'est réévalué que lorsque son choix change.
+///
+/// Sur macOS 26, chaque réévaluation d'un `Picker` segmenté laisse en mémoire deux objets d'observation que SwiftUI
+/// reparcourt ensuite à chaque mise en page. Dans un panneau redessiné plusieurs fois par seconde (touches d'extension,
+/// données vivantes), ils s'accumulent par dizaines de milliers en quelques heures, la mise en page finit par occuper
+/// tout le fil principal et le boîtier n'est plus rafraîchi. À employer avec `.equatable()`.
+///
+/// La comparaison ne regarde que le choix : si la liaison change de cible sans que le choix change, ajouter un `.id`.
+private struct SegmentedChoice<Value: Hashable, Options: View>: View, Equatable {
+    private let title: LocalizedStringKey
+    private let selection: Binding<Value>
+    /// Le choix au moment où la vue a été décrite : la liaison, elle, rend toujours la valeur du moment.
+    private let current: Value
+    private let options: Options
+
+    init(_ title: LocalizedStringKey, selection: Binding<Value>, @ViewBuilder options: () -> Options) {
+        self.title = title
+        self.selection = selection
+        self.current = selection.wrappedValue
+        self.options = options()
+    }
+
+    nonisolated static func == (a: Self, b: Self) -> Bool { a.current == b.current }
+
+    var body: some View {
+        Picker(title, selection: selection) { options }
+            .pickerStyle(.segmented)
     }
 }
 

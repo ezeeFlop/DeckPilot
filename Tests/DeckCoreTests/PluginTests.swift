@@ -208,3 +208,40 @@ final class PluginBindingTests: XCTestCase {
         XCTAssertNil(try JSONDecoder().decode(KeyConfig.self, from: JSONSerialization.data(withJSONObject: old)).plugin)
     }
 }
+
+final class PluginKeyCopyTests: XCTestCase {
+    /// Deux touches visibles avec le même identifiant seraient une seule touche pour l'extension.
+    func testACopiedExtensionKeyGetsItsOwnContextAndKeepsItsSettings() {
+        var original = KeyConfig(title: "GPU")
+        original.plugin = PluginBinding(action: "com.example.meteo.temperature", settings: .object(["ville": .string("Lyon")]))
+        let copy = original.copiedForPasting()
+        XCTAssertNotEqual(copy.plugin?.context, original.plugin?.context)
+        XCTAssertEqual(copy.plugin?.action, original.plugin?.action)
+        XCTAssertEqual(copy.plugin?.settings, original.plugin?.settings)
+        XCTAssertEqual(copy.title, "GPU")
+    }
+
+    func testEachPasteGetsADifferentContext() {
+        var original = KeyConfig()
+        original.plugin = PluginBinding(action: "com.example.meteo.temperature")
+        XCTAssertNotEqual(original.copiedForPasting().plugin?.context, original.copiedForPasting().plugin?.context)
+    }
+
+    func testAnOrdinaryKeyIsCopiedUnchanged() {
+        let original = KeyConfig(title: "Safari", action: .launchApp(path: "/Applications/Safari.app"))
+        XCTAssertEqual(original.copiedForPasting(), original)
+    }
+}
+
+final class PluginInstanceIndexTests: XCTestCase {
+    /// Une configuration abîmée (même identifiant sur deux touches) ne doit pas arrêter l'application.
+    func testInstancesSharingAContextKeepTheFirstOne() {
+        let first = PluginInstance(action: "a", context: "C1", settings: .object([:]), row: 0, column: 0, state: 0)
+        let twin = PluginInstance(action: "a", context: "C1", settings: .object([:]), row: 1, column: 2, state: 0)
+        let other = PluginInstance(action: "a", context: "C2", settings: .object([:]), row: 2, column: 4, state: 0)
+        let index = PluginInstance.byContext([first, twin, other])
+        XCTAssertEqual(index.count, 2)
+        XCTAssertEqual(index["C1"], first)
+        XCTAssertEqual(index["C2"], other)
+    }
+}

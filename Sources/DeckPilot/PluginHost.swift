@@ -128,7 +128,7 @@ final class PluginHost: ObservableObject {
 
     /// Les touches d'extension visibles en ce moment : annonce aux extensions celles qui apparaissent et disparaissent.
     func sync(_ visible: [PluginInstance]) {
-        let wanted = Dictionary(uniqueKeysWithValues: visible.map { ($0.context, $0) })
+        let wanted = PluginInstance.byContext(visible)
         for (context, instance) in instances where wanted[context] == nil {
             send(PluginEvent.willDisappear(instance, device: deviceID), toPluginOf: instance.action, context: context, appearing: false)
             instances[context] = nil

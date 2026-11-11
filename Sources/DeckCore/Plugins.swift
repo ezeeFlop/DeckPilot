@@ -93,6 +93,18 @@ public struct PluginBinding: Codable, Hashable, Sendable {
     }
 }
 
+extension KeyConfig {
+    /// La touche telle qu'il faut la coller ailleurs : une touche d'extension y reçoit son propre identifiant,
+    /// sans quoi l'original et la copie seraient une seule et même touche pour l'extension.
+    public func copiedForPasting() -> KeyConfig {
+        var copy = self
+        if let binding = plugin {
+            copy.plugin = PluginBinding(action: binding.action, settings: binding.settings)
+        }
+        return copy
+    }
+}
+
 /// Une touche d'extension telle qu'elle est décrite à l'extension.
 public struct PluginInstance: Equatable, Sendable {
     public var action: String
@@ -272,5 +284,12 @@ public enum DataURL {
             return (mimeType, data)
         }
         return (mimeType, Data((body.removingPercentEncoding ?? body).utf8))
+    }
+}
+
+extension PluginInstance {
+    /// Range les touches par identifiant. Si deux touches portent le même, la première l'emporte.
+    public static func byContext(_ instances: [PluginInstance]) -> [String: PluginInstance] {
+        Dictionary(instances.map { ($0.context, $0) }, uniquingKeysWith: { first, _ in first })
     }
 }

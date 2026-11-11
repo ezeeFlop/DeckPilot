@@ -85,7 +85,9 @@ final class DeckController: ObservableObject {
         pluginObservation = plugins.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
         plugins.onSettingsChanged = { [weak self] context, settings in self?.storePluginSettings(settings, for: context) }
         plugins.start(store: store)
-        // `-select 13` au lancement ouvre directement le réglage de cette case.
+        // `-page 1 -select 13` au lancement ouvre directement le réglage de cette case, sur cette page (numérotée depuis 0).
+        let requestedPage = UserDefaults.standard.integer(forKey: "page")
+        if config.pages.indices.contains(requestedPage) { currentPageIndex = requestedPage }
         let requested = UserDefaults.standard.integer(forKey: "select")
         if layout.slots.contains(requested) { selectedSlot = requested }
 
@@ -205,7 +207,7 @@ final class DeckController: ObservableObject {
     var canPaste: Bool { clipboard != nil }
 
     func pasteKey(_ slot: Int) {
-        guard let key = clipboard else { return }
+        guard let key = clipboard?.copiedForPasting() else { return }
         setKey(layout.isPressable(slot: slot) ? key : displayOnly(key), at: slot)
     }
 
